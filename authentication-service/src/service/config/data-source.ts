@@ -3,7 +3,6 @@ import { Permission } from 'src/entity/permission';
 import { Profile } from 'src/entity/profile';
 import { Roles } from 'src/entity/role';
 import { DataSource, DataSourceOptions } from 'typeorm';
-require('dotenv').config()
 
 // use this file for running migration
 export const postgresOptions: DataSourceOptions = {

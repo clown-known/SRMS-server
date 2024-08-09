@@ -1,17 +1,22 @@
-import { Injectable, Req, UseGuards } from '@nestjs/common';
+import { Inject, Injectable, Req, UseGuards } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Account } from 'src/entity/account';
-import { ConfigService } from '@nestjs/config';
+import { ConfigService, ConfigType } from '@nestjs/config';
 import { compare } from 'bcrypt';
 import { hash } from './security';
-import { CreateAccountRequest, LoginRequest, RegisterRequest } from 'src/inteface/request/';
+import { CreateAccountRequest, LoginRequest, RegisterRequest, UpdateRefreshTokenRequest } from 'src/inteface/request/';
+import { LoginResponse } from 'src/inteface/response/login-response.dto';
+import { refreshTokenConfig } from './config';
+import { AccountRepository } from 'src/repository';
+import { JwtPayload } from 'src/inteface';
 
 @Injectable()
 export class AuthenticationService {
   constructor(
-              @InjectRepository(Account) private readonly _accountRepository : Repository<Account>,
+              @InjectRepository(Account) private readonly _accountRepository : AccountRepository,
+              @Inject(refreshTokenConfig.KEY) private readonly refeshTokenConfig: ConfigType<typeof refreshTokenConfig>,
               private readonly _jwtService: JwtService,
               private readonly _configService: ConfigService
   ){}
@@ -20,11 +25,11 @@ export class AuthenticationService {
     const saveu = await this._accountRepository.save(data);
     return saveu;
   }
-  async login(data: LoginRequest) {
+  async login(data: LoginRequest) : Promise<LoginResponse> {
     const account = await this._accountRepository.findOne({ where: { email: data.email } });
     if (account && await compare(data.password, account.password)) {
       const { accessToken, refreshToken } = await this.generateTokens(account.id, account.email);
-      await this.updateRefreshToken(account.id, refreshToken);
+      await this.updateRefreshToken({accountId: account.id, refreshToken: refreshToken});
       return { accessToken, refreshToken };
     }
     return null;
@@ -48,29 +53,23 @@ export class AuthenticationService {
       const account = await this._accountRepository.findOne({ where: { id: payload.sub } });
       if (account && account.refreshToken === refreshToken) {
         const tokens = await this.generateTokens(account.id, account.email);
-        await this.updateRefreshToken(account.id, tokens.refreshToken);
+        await this.updateRefreshToken({accountId: account.id, refreshToken: tokens.refreshToken});
         return tokens;
       }
     } catch (error) {
       throw new Error('Invalid refresh token');
     }
   }
-  private async generateTokens(id: string, email: string): Promise<{ accessToken: string; refreshToken: string }> {
-    const payload = { sub: id , email: email};
+  private async generateTokens(id: string, email: string): Promise<LoginResponse> {
+    const payload : JwtPayload = { sub: id , email: email};
     const [accessToken, refreshToken] = await Promise.all([
-      this._jwtService.signAsync(payload, {
-        secret: this._configService.get('JWT_SECRET'),
-        expiresIn: '15m',
-      }),
-      this._jwtService.signAsync(payload, {
-        secret: this._configService.get('REFRESH_TOKEN_SECRET'),
-        expiresIn: '7d',
-      }),
+      this._jwtService.sign(payload),
+      this._jwtService.sign(payload,this.refeshTokenConfig),
     ]);
     return { accessToken, refreshToken };
   }
 
-  private async updateRefreshToken(accountId: string, refreshToken: string): Promise<void> {
-    await this._accountRepository.update(accountId, { refreshToken });
+  private async updateRefreshToken(data: UpdateRefreshTokenRequest): Promise<void> {
+    await this._accountRepository.update(data.accountId, { refreshToken: data.refreshToken });
   }
 }

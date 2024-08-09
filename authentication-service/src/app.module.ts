@@ -9,17 +9,26 @@ import { postgresOptions } from './service/config/data-source';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtStrategy } from './stragery/jwt.strangery';
 import { RefreshTokenStrategy } from './stragery/refreshToken.strategy';
-import jwtConfig from './service/config/jwt.config';
+import {jwtConfig,refreshTokenConfig} from './service/config/index';
+import { AccountRepository } from './repository';
+
 @Module({
   imports: [
-    // ConfigModule.forRoot(),
+    ConfigModule.forRoot({
+      expandVariables: true
+    }),
     TypeOrmModule.forRoot(postgresOptions),
     TypeOrmModule.forFeature([Account]),
     PassportModule,
     JwtModule.registerAsync(jwtConfig.asProvider()),
-    ConfigModule.forFeature(jwtConfig)
+    // ConfigModule.forFeature(jwtConfig),
+    ConfigModule.forFeature(refreshTokenConfig)
   ],
   controllers: [AuthenticationController],
-  providers: [AuthenticationService, JwtService,ConfigService,JwtStrategy,RefreshTokenStrategy],
+  providers: [
+    AuthenticationService,ConfigService,
+    JwtStrategy,RefreshTokenStrategy,
+    AccountRepository,
+  ],
 })
 export class AppModule {}

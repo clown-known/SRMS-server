@@ -10,7 +10,6 @@ import { jwtConfig } from "src/service/config";
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(
     private readonly _jwtService: JwtService,
-    //private configService: ConfigService,
     @Inject(jwtConfig.KEY)
     private readonly jwtConfiguration: ConfigType<typeof jwtConfig>
   ) {

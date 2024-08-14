@@ -1,16 +1,18 @@
-import { permission } from "process";
 import { BaseEntity } from "src/common/base.entity";
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { Roles } from "./role";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { RolePermissions } from "./role.permissions";
 
-@Entity()
+@Entity("permissions")
 export class Permission extends BaseEntity{
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
     @Column()
-    name: string;
+    module: string;
 
-    @ManyToOne(() => Roles, roles => roles.permissions)
-    role :Roles;
+    @Column()
+    action: string;
+
+    @OneToMany(() => RolePermissions, rolePermission => rolePermission.permission)
+    rolePermissions: RolePermissions[];
 }

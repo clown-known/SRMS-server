@@ -10,7 +10,11 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtStrategy } from './stragery/jwt.strangery';
 import { RefreshTokenStrategy } from './stragery/refreshToken.strategy';
 import {jwtConfig,refreshTokenConfig} from './service/config/index';
-import { AccountRepository } from './repository';
+import { AccountRepository, PermissionRepository, RoleRepository } from './repository';
+import { RolePermissionRepository } from './repository/role.permission.repository';
+import { RolePermissions } from './entity/role.permissions';
+import { Permission } from './entity/permission';
+import { Roles } from './entity/role';
 
 @Module({
   imports: [
@@ -18,17 +22,17 @@ import { AccountRepository } from './repository';
       expandVariables: true
     }),
     TypeOrmModule.forRoot(postgresOptions),
-    TypeOrmModule.forFeature([Account]),
+    TypeOrmModule.forFeature([Account,Roles,Permission,RolePermissions]),
     PassportModule,
     JwtModule.registerAsync(jwtConfig.asProvider()),
-    // ConfigModule.forFeature(jwtConfig),
+    ConfigModule.forFeature(jwtConfig),
     ConfigModule.forFeature(refreshTokenConfig)
   ],
   controllers: [AuthenticationController],
   providers: [
     AuthenticationService,ConfigService,
     JwtStrategy,RefreshTokenStrategy,
-    AccountRepository,
+    AccountRepository,RoleRepository,PermissionRepository,RolePermissionRepository
   ],
 })
 export class AppModule {}

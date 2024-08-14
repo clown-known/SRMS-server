@@ -1,9 +1,11 @@
 import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthenticationService } from './service/authentication.service';
 import { Account } from './entity/account';
-import { CreateAccountRequest } from './inteface/request/create-account.dto';
+import { CreateAccountRequest } from './inteface/account/request/create-account.dto';
 import { LoginRequest } from './inteface/request/login-request.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { JWTAuthGuard } from './guards/jwt-auth/jwt-auth.guard';
+import { RefreshAuthGuard } from './guards/refresh-auth/refresh-auth.guard';
 
 @Controller('auth')
 export class AuthenticationController {
@@ -18,10 +20,20 @@ export class AuthenticationController {
   login(@Body() req: LoginRequest){
     return this.appService.login(req);
   }
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JWTAuthGuard)
   @Get('test')
   me(@Req() req){
-    console.log(JSON.stringify(Object.keys(req)));
     return req.user;
+  }
+
+  @Post('findByEmail')
+  findByEmail(@Body() req: LoginRequest){
+    return this.appService.findByEmail(req.email);
+  }
+  
+  @UseGuards(RefreshAuthGuard)
+  @Get('refresh')
+  refresh(@Req() req){
+    return this.appService.refreshToken(req.user.refreshToken);
   }
 }

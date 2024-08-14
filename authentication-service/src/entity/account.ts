@@ -1,5 +1,5 @@
 import { BaseEntity } from "src/common/base.entity";
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Profile } from "./profile";
 import { Roles } from "./role";
 @Entity()
@@ -30,4 +30,8 @@ export class Account extends BaseEntity{
 
     @ManyToOne(() => Roles, role => role.accounts)
     role :Roles;
+
+    @OneToOne(() => Profile, profile => profile.account)
+    @JoinColumn()
+    profile: Profile;
 }

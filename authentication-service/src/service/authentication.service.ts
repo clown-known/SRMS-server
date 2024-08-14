@@ -1,21 +1,20 @@
 import { Inject, Injectable, Req, UseGuards } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { Account } from 'src/entity/account';
 import { ConfigService, ConfigType } from '@nestjs/config';
 import { compare } from 'bcrypt';
 import { hash } from './security';
 import { CreateAccountRequest, LoginRequest, RegisterRequest, UpdateRefreshTokenRequest } from 'src/inteface/request/';
-import { LoginResponse } from 'src/inteface/response/login-response.dto';
 import { refreshTokenConfig } from './config';
 import { AccountRepository } from 'src/repository';
 import { JwtPayload } from 'src/inteface';
+import { ITokenResponse, JwtResponse } from 'src/inteface/response';
 
 @Injectable()
 export class AuthenticationService {
   constructor(
-              @InjectRepository(Account) private readonly _accountRepository : AccountRepository,
+              private readonly _accountRepository : AccountRepository,
               @Inject(refreshTokenConfig.KEY) private readonly refeshTokenConfig: ConfigType<typeof refreshTokenConfig>,
               private readonly _jwtService: JwtService,
               private readonly _configService: ConfigService
@@ -25,7 +24,7 @@ export class AuthenticationService {
     const saveu = await this._accountRepository.save(data);
     return saveu;
   }
-  async login(data: LoginRequest) : Promise<LoginResponse> {
+  async login(data: LoginRequest) : Promise<ITokenResponse> {
     const account = await this._accountRepository.findOne({ where: { email: data.email } });
     if (account && await compare(data.password, account.password)) {
       const { accessToken, refreshToken } = await this.generateTokens(account.id, account.email);
@@ -33,6 +32,9 @@ export class AuthenticationService {
       return { accessToken, refreshToken };
     }
     return null;
+  }
+  async findByEmail(email: string): Promise<Account | null> {
+    return this._accountRepository.findByEmail(email);
   }
   async logout(id: string) {
     return this._accountRepository.update(id, { refreshToken: null });
@@ -45,22 +47,23 @@ export class AuthenticationService {
   async getAllAccounts(){
     return await this._accountRepository.find();
   }
-  async refreshToken(refreshToken: string) {
-    try {
-      const payload = await this._jwtService.verifyAsync(refreshToken, {
+    async refreshToken(refreshToken: string) : Promise<JwtResponse> {
+    //try {
+      const exPayload = await this._jwtService.verifyAsync(refreshToken, {
         secret: this._configService.get('REFRESH_TOKEN_SECRET'),
       });
-      const account = await this._accountRepository.findOne({ where: { id: payload.sub } });
+      const account = await this._accountRepository.findOne({ where: { id: exPayload.sub } });
       if (account && account.refreshToken === refreshToken) {
-        const tokens = await this.generateTokens(account.id, account.email);
-        await this.updateRefreshToken({accountId: account.id, refreshToken: tokens.refreshToken});
-        return tokens;
-      }
-    } catch (error) {
-      throw new Error('Invalid refresh token');
-    }
+        const payload : JwtPayload = { sub: account.id , email: account.email};
+        const token = await this._jwtService.sign(payload);
+        return { accessToken: token };
+      } 
+    // } 
+    // catch (error) {
+    //   return null;
+    // }
   }
-  private async generateTokens(id: string, email: string): Promise<LoginResponse> {
+  private async generateTokens(id: string, email: string): Promise<ITokenResponse> {
     const payload : JwtPayload = { sub: id , email: email};
     const [accessToken, refreshToken] = await Promise.all([
       this._jwtService.sign(payload),

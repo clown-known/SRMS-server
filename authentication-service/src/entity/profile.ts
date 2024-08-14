@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Account } from "./account";
 
 @Entity()
 export class Profile {
@@ -16,7 +17,13 @@ export class Profile {
 
     @Column()
     address: string;
-
+ 
     @Column()
     dateOfBirth: Date;
+
+    @Column()
+    accountId: string;
+
+    @OneToOne(() => Account, account => account.profile)
+    account: Account;
 }

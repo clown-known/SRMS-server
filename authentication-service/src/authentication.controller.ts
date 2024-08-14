@@ -3,7 +3,6 @@ import { AuthenticationService } from './service/authentication.service';
 import { Account } from './entity/account';
 import { CreateAccountRequest } from './inteface/account/request/create-account.dto';
 import { LoginRequest } from './inteface/request/login-request.dto';
-import { AuthGuard } from '@nestjs/passport';
 import { JWTAuthGuard } from './guards/jwt-auth/jwt-auth.guard';
 import { RefreshAuthGuard } from './guards/refresh-auth/refresh-auth.guard';
 

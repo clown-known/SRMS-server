@@ -1,5 +1,5 @@
 export class Response<T> {
-    status: number;
+    statusCode: number;
     message: string;
     errors: { [key: string]: any } | null;
     data: T;

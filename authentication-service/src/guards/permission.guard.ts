@@ -1,58 +1,62 @@
-// import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from "@nestjs/common";
-// import { Reflector } from "@nestjs/core";
-// import { JwtService } from "@nestjs/jwt";
-// import { InjectRepository } from "@nestjs/typeorm";
-// import { Observable } from "rxjs";
-// import { PERMISSIONS_KEY } from "src/decorator/permission.decorator";
-// import { Account } from "src/entity/account";
-// import { Repository } from "typeorm";
+import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from "@nestjs/common";
+import { Reflector } from "@nestjs/core";
+import { JwtService } from "@nestjs/jwt";
+import { PERMISSIONS_KEY } from "src/decorator/permission.decorator";
+import { AccountRepository, PermissionRepository } from "src/repository";
 
-// @Injectable()
-// export class PermissionsGuard implements CanActivate {
-//   constructor(
-//     private readonly reflector: Reflector,
-//     private readonly jwtService: JwtService,
-//     @InjectRepository(Account)
-//     private readonly accountRepository: Repository<Account>,
-//   ) {}
+@Injectable()
+export class PermissionsGuard implements CanActivate {
+    constructor(
+        private readonly reflector: Reflector,
+        private readonly jwtService: JwtService,
+        private readonly accountRepository: AccountRepository,
+        private readonly permissionRepository: PermissionRepository
+    ) {}
 
-//   async canActivate(context: ExecutionContext): Promise<boolean> {
-//     const requiredPermissions = this.reflector.get<string[]>(PERMISSIONS_KEY, context.getHandler());
+    async canActivate(context: ExecutionContext): Promise<boolean> {
+        const requiredPermissions = this.reflector.get<string>(PERMISSIONS_KEY, context.getHandler());
 
-//     if (!requiredPermissions || requiredPermissions.length === 0) {
-//       return true;
-//     }
+    if (!requiredPermissions || requiredPermissions.length === 0) {
+        return true;
+    }
 
-//     const request = context.switchToHttp().getRequest();
-//     const token = request.headers.authorization?.split(' ')[1];
+    const request = context.switchToHttp().getRequest();
+    const token = request.headers.authorization?.split(' ')[1];
 
-//     if (!token) {
-//       throw new ForbiddenException('No token provided');
-//     }
+    if (!token) {
+        throw new ForbiddenException('No token provided');
+    }
+    //ex
+    const decodedToken = this.jwtService.verify(token);
+    
+    const user = await this.accountRepository.findOne({
+        where: { id: decodedToken.sub }
+    });
 
-//     const decodedToken = this.jwtService.verify(token);
+    if (!user ) {
+        throw new ForbiddenException('Invalid user or role');
+    }
+    
+    const userPermissions = await this.permissionRepository.getPermissionsOfUser(user.id);
+    
+        const permissionKeys = userPermissions.map(
+            (permission) => `${permission.module}:${permission.action}`,
+        );
+        if (permissionKeys.length === 0) {
+            throw new ForbiddenException('No permissions found');
+        }
+        // const hasPermission = requiredPermissions.every((permission) =>
+        //     permissionKeys.includes(permission),
+        // );
 
-//     const user = await this.accountRepository.findOne({
-//       where: { id: decodedToken.sub },
-//       relations: ['role', 'role.permissions'],
-//     });
+        const hasPermission = permissionKeys.every((permission) =>
+            requiredPermissions.includes(permission),
+        );
 
-//     if (!user || !user.role) {
-//       throw new ForbiddenException('Invalid user or role');
-//     }
+        if (!hasPermission) {
+            throw new ForbiddenException('Insufficient permissions');
+        }
 
-//     const userPermissions = user.role.permissions.map(
-//       (permission) => `${permission.module}:${permission.action}`,
-//     );
-
-//     const hasPermission = requiredPermissions.every((permission) =>
-//       userPermissions.includes(permission),
-//     );
-
-//     if (!hasPermission) {
-//       throw new ForbiddenException('Insufficient permissions');
-//     }
-
-//     return true;
-//   }
-// }
+    return true;
+    }
+}

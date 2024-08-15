@@ -5,8 +5,12 @@ import { CreateAccountRequest } from './inteface/account/request/create-account.
 import { LoginRequest } from './inteface/request/login-request.dto';
 import { JWTAuthGuard } from './guards/jwt-auth/jwt-auth.guard';
 import { RefreshAuthGuard } from './guards/refresh-auth/refresh-auth.guard';
+import { PermissionsGuard } from './guards/permission.guard';
+import { Permissions } from './decorator/permission.decorator';
+import { Actions, Modules } from './common/enum';
 
 @Controller('auth')
+
 export class AuthenticationController {
   constructor(private readonly appService: AuthenticationService) {}
 
@@ -26,6 +30,8 @@ export class AuthenticationController {
   }
 
   @Post('findByEmail')
+  @UseGuards(PermissionsGuard)
+  @Permissions(Modules.ACCOUNT, Actions.CREATE)
   findByEmail(@Body() req: LoginRequest){
     return this.appService.findByEmail(req.email);
   }

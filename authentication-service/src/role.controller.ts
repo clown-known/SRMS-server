@@ -9,6 +9,7 @@ export class RoleController {
 
     @Post('create')
     async addPermissionToRole(@Body() role: CreateRoleRequestDto): Promise<Roles> {
+        //ex
         return this.roleService.createRole(role);
     }
 }

@@ -18,11 +18,12 @@ export class PermissionRepository extends Repository<Permission> {
             where: { id },
             relations: ['role', 'role.rolePermissions', 'role.rolePermissions.permission']
         });
-    
         if (!user) {
             throw new Error('User not found');
         }
-    
+        if (!user.role) {
+            return []
+        }
         return user.role.rolePermissions.map(rp => rp.permission);
     }
 }

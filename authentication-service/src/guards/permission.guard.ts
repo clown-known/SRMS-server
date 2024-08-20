@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { JwtService } from "@nestjs/jwt";
-import { PERMISSIONS_KEY } from "src/decorator/permission.decorator";
+import { PERMISSIONS_KEY, PermissionsDecorator } from "src/decorator/permission.decorator";
 import { AccountRepository, PermissionRepository } from "src/repository";
 
 @Injectable()
@@ -14,7 +14,7 @@ export class PermissionsGuard implements CanActivate {
     ) {}
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
-        const requiredPermissions = this.reflector.get<string>(PERMISSIONS_KEY, context.getHandler());
+        const requiredPermissions = this.reflector.getAllAndOverride<PermissionsDecorator[]>(PERMISSIONS_KEY, [context.getHandler(), context.getClass()]);
 
     if (!requiredPermissions || requiredPermissions.length === 0) {
         return true;
@@ -42,16 +42,17 @@ export class PermissionsGuard implements CanActivate {
         const permissionKeys = userPermissions.map(
             (permission) => `${permission.module}:${permission.action}`,
         );
+        console.log(requiredPermissions);
         if (permissionKeys.length === 0) {
             throw new ForbiddenException('No permissions found');
         }
-        // const hasPermission = requiredPermissions.every((permission) =>
-        //     permissionKeys.includes(permission),
+        const hasPermission = requiredPermissions.some((permission) =>
+            permissionKeys.includes(`${permission.module}:${permission.action}`)
+        ); 
+        // console.log(hasPermission);
+        // const hasPermission = permissionKeys.every((permission) =>
+        //     requiredPermissions.includes(permission),
         // );
-
-        const hasPermission = permissionKeys.every((permission) =>
-            requiredPermissions.includes(permission),
-        );
 
         if (!hasPermission) {
             throw new ForbiddenException('Insufficient permissions');

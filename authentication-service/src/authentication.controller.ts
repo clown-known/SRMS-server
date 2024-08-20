@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { AuthenticationService } from './service/authentication.service';
 import { Account } from './entity/account';
 import { CreateAccountRequest } from './inteface/account/request/create-account.dto';
@@ -8,20 +8,22 @@ import { RefreshAuthGuard } from './guards/refresh-auth/refresh-auth.guard';
 import { PermissionsGuard } from './guards/permission.guard';
 import { Permissions } from './decorator/permission.decorator';
 import { Actions, Modules } from './common/enum';
+import { ChangePasswordRequest, RegisterRequest } from './inteface/request';
+
 
 @Controller('auth')
 
 export class AuthenticationController {
-  constructor(private readonly appService: AuthenticationService) {}
+  constructor(private readonly authenticationService: AuthenticationService) {}
 
   @Post()
   createUser(@Body() req: CreateAccountRequest) : Promise<Account>{
-    console.log(req)
-    return this.appService.createAccount(req);
+    console.log(req)  
+    return this.authenticationService.createAccount(req);
   }
   @Post('login')
   login(@Body() req: LoginRequest){
-    return this.appService.login(req);
+    return this.authenticationService.login(req);
   }
   @UseGuards(JWTAuthGuard)
   @Get('test')
@@ -31,14 +33,27 @@ export class AuthenticationController {
 
   @Post('findByEmail')
   @UseGuards(PermissionsGuard)
-  @Permissions(Modules.ACCOUNT, Actions.CREATE)
+  @Permissions([
+    {module: Modules.ACCOUNT, action: Actions.DELETE},
+    {module: Modules.ACCOUNT, action: Actions.CREATE}]
+  )
   findByEmail(@Body() req: LoginRequest){
-    return this.appService.findByEmail(req.email);
+    return this.authenticationService.findByEmail(req.email);
   }
   
+  @Post('register')
+  register(@Body() req: RegisterRequest){
+    return this.authenticationService.register(req);
+  }
+  
+  @Put(':id/changePassword')
+  changePassword(@Param('id') id: string,@Body() req: ChangePasswordRequest){
+    return this.authenticationService.changePassword(id,req);
+  }
+
   @UseGuards(RefreshAuthGuard)
   @Get('refresh')
   refresh(@Req() req){
-    return this.appService.refreshToken(req.user.refreshToken);
+    return this.authenticationService.refreshToken(req.user.refreshToken);
   }
 }

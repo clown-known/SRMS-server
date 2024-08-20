@@ -6,4 +6,5 @@ export * from '../profile/request/create-profile-request.dto';
 export * from '../profile/request/update-profile-request.dto';
 
 export * from '../profile/response/profile-response';
+export * from './change-password-request.dto';
 //export * from './reset-password-request.dto';

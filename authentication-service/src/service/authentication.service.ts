@@ -5,11 +5,13 @@ import { Account } from 'src/entity/account';
 import { ConfigService, ConfigType } from '@nestjs/config';
 import { compare } from 'bcrypt';
 import { hash } from './security';
-import { CreateAccountRequest, LoginRequest, RegisterRequest, UpdateRefreshTokenRequest } from 'src/inteface/request/';
+import { ChangePasswordRequest, CreateAccountRequest, LoginRequest, RegisterRequest, UpdateRefreshTokenRequest } from 'src/inteface/request/';
 import { refreshTokenConfig } from './config';
 import { AccountRepository } from 'src/repository';
 import { JwtPayload } from 'src/inteface';
 import { ITokenResponse, JwtResponse } from 'src/inteface/response';
+import { plainToInstance } from 'class-transformer';
+import { RegisterResponseDTO } from 'src/inteface/response/register-response.dto';
 
 @Injectable()
 export class AuthenticationService {
@@ -42,8 +44,21 @@ export class AuthenticationService {
   async register(data: RegisterRequest){
     const hashedPassword = await hash(data.password);
     const account = await this._accountRepository.save({...data, password: hashedPassword});
-    return account;
+    
+    return plainToInstance(RegisterResponseDTO,account);
   }
+
+  async changePassword(id: string, data: ChangePasswordRequest){
+    console.log(data);
+    const account = await this._accountRepository.findOne({ where: { id: id } });
+    console.log(account);
+    if (account && await compare(data.oldPassword, account.password)) {
+      const hashedPassword = await hash(data.newPassword);
+      console.log(hashedPassword);
+      return this._accountRepository.update(id, { password: hashedPassword });
+    }
+  }
+
   async getAllAccounts(){
     return await this._accountRepository.find();
   }

@@ -7,8 +7,10 @@ import {
     scrypt,
   } from 'crypto';
   require('dotenv').config();
-  export const hash = async (data: string) =>
-    bcryptHash(data, process.env.HASH_SALT as string);
+  export const hash = async (data: string) =>{
+    const saltRounds = parseInt(process.env.HASH_SALT as string, 10);
+    return bcryptHash(data, saltRounds);
+  }
 
   export const _encrypt = async (data: string): Promise<string> => {
     const algorithm = 'aes-192-cbc';

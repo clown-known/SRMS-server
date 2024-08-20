@@ -21,6 +21,8 @@ import { RoleService } from './service/role.service';
 import { PermissionService } from './service/permission.service';
 import { ProfileService } from './service/profile.service';
 import { Profile } from './entity/profile';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { ResponseInterceptor } from './common/response.interceptor';
 
 @Module({
   imports: [
@@ -38,7 +40,11 @@ import { Profile } from './entity/profile';
   providers: [
     AuthenticationService,ConfigService,RoleService,PermissionService,ProfileService,
     JwtStrategy,RefreshTokenStrategy,
-    AccountRepository,RoleRepository,PermissionRepository,RolePermissionRepository,ProfileRepository
+    AccountRepository,RoleRepository,PermissionRepository,RolePermissionRepository,ProfileRepository,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ResponseInterceptor,
+    }
   ],
 })
 export class AppModule {}

@@ -1,23 +1,24 @@
-import { Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Roles } from "src/entity/role";
-import { RolePermissions } from "src/entity/role.permissions";
-import { Repository } from "typeorm";
-import { RolePermissionRepository } from "./role.permission.repository";
-import { PermissionRepository } from "./permission.repository";
+import { Inject, Injectable } from "@nestjs/common";
+import { DataSource, Repository } from "typeorm";
+import { BaseRepository } from "src/common/base-repository";
+import { REQUEST } from '@nestjs/core';
+import { Request } from 'express';
+import { Permission, RolePermissions, Roles } from "src/entity";
+
 @Injectable()
-export class RoleRepository extends Repository<Roles>{
+export class RoleRepository extends BaseRepository {
     constructor(
-        @InjectRepository(Roles)
-        private readonly repository: Repository<Roles>,
-        private readonly rolePermissionRepository: RolePermissionRepository,
-        private readonly permissionRepository: PermissionRepository
+        dataSource: DataSource, @Inject(REQUEST) req: Request
     ) {
-        super(repository.target, repository.manager, repository.queryRunner);
-        this.repository = repository;
+        super(dataSource, req);
     }
+
+    async getAllRoles() {
+        return await this.getRepository(Roles).find();
+      }
+
     async addPermissionToRole(roleId: string, permissionId: string) {
-        const role = await this.repository.findOne({ 
+        const role = await this.getRepository(Roles).findOne({ 
             where: { id: roleId }
         });
 
@@ -25,7 +26,7 @@ export class RoleRepository extends Repository<Roles>{
             throw new Error('Role not found');
         }
 
-        const permission = await this.permissionRepository.findOneBy({ 
+        const permission = await this.getRepository(Permission).findOneBy({ 
             id: permissionId 
         });
         
@@ -37,15 +38,15 @@ export class RoleRepository extends Repository<Roles>{
         newRolePermission.role = role;
         newRolePermission.permission = permission;
 
-        await this.rolePermissionRepository.save(newRolePermission);
+        await this.getRepository(RolePermissions).save(newRolePermission);
 
-        await this.repository.createQueryBuilder()
+        await this.getRepository(Roles).createQueryBuilder()
         .relation(Roles, "rolePermissions")
         .of(role)
         .add(newRolePermission);
 
     // Return a simplified role object without circular references
-    return this.repository.findOne({
+    return this.getRepository(Roles).findOne({
         where: { id: roleId },
         relations: ['rolePermissions', 'rolePermissions.permission'],
         select: ['id', 'name'] // Add other necessary fields

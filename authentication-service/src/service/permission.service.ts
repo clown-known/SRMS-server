@@ -14,13 +14,13 @@ export class PermissionService {
     return this.permissionRepository.find();
   }
   getPermissionById(id: string) {
-    return this.permissionRepository.findOne({ where: { id } });
+    return this.permissionRepository.findOne(id);
   }
   getPermissionsOfUser(id: string) {
     return this.permissionRepository.getPermissionsOfUser(id);
   }
   async updatePermission(id: string, permission: CreatePermissionRequestDto) {
-    const permissionToUpdate = await this.permissionRepository.findOne({ where: { id } });
+    const permissionToUpdate = await this.permissionRepository.findOne(id);
     if (!permissionToUpdate) {
       throw new Error('Permission not found');
     }

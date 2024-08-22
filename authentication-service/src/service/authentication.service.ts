@@ -9,9 +9,8 @@ import { ChangePasswordRequest, CreateAccountRequest, LoginRequest, RegisterRequ
 import { refreshTokenConfig } from './config';
 import { AccountRepository } from 'src/repository';
 import { JwtPayload } from 'src/inteface';
-import { ITokenResponse, JwtResponse } from 'src/inteface/response';
+import { ITokenResponse, JwtResponse, RegisterResponse } from 'src/inteface/response';
 import { plainToInstance } from 'class-transformer';
-import { RegisterResponseDTO } from 'src/inteface/response/register-response.dto';
 
 @Injectable()
 export class AuthenticationService {
@@ -27,7 +26,7 @@ export class AuthenticationService {
     return saveu;
   }
   async login(data: LoginRequest) : Promise<ITokenResponse> {
-    const account = await this._accountRepository.findOne({ where: { email: data.email } });
+    const account = await this._accountRepository.findByEmail(data.email);
     if (account && await compare(data.password, account.password)) {
       const { accessToken, refreshToken } = await this.generateTokens(account.id, account.email);
       await this.updateRefreshToken({accountId: account.id, refreshToken: refreshToken});
@@ -45,12 +44,12 @@ export class AuthenticationService {
     const hashedPassword = await hash(data.password);
     const account = await this._accountRepository.save({...data, password: hashedPassword});
     
-    return plainToInstance(RegisterResponseDTO,account);
+    return plainToInstance(RegisterResponse,account);
   }
 
   async changePassword(id: string, data: ChangePasswordRequest){
     console.log(data);
-    const account = await this._accountRepository.findOne({ where: { id: id } });
+    const account = await this._accountRepository.findOne(id);
     console.log(account);
     if (account && await compare(data.oldPassword, account.password)) {
       const hashedPassword = await hash(data.newPassword);
@@ -67,7 +66,7 @@ export class AuthenticationService {
       const exPayload = await this._jwtService.verifyAsync(refreshToken, {
         secret: this._configService.get('REFRESH_TOKEN_SECRET'),
       });
-      const account = await this._accountRepository.findOne({ where: { id: exPayload.sub } });
+      const account = await this._accountRepository.findOne(exPayload.sub);
       if (account && account.refreshToken === refreshToken) {
         const payload : JwtPayload = { sub: account.id , email: account.email};
         const token = await this._jwtService.sign(payload);

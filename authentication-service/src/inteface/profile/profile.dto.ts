@@ -1,4 +1,4 @@
-export interface IProfile {
+export class ProfileDTO {
     accountId: string;
     firstName: string;
     lastName: string;

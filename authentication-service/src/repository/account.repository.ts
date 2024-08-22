@@ -1,18 +1,27 @@
-import { Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
+import { Inject, Injectable } from "@nestjs/common";
+import { REQUEST } from "@nestjs/core";
+import { Request } from "express";
+import { BaseRepository } from "src/common/base-repository";
 import { Account } from "src/entity/account";
-import { Repository } from "typeorm";
+import { DataSource, DeepPartial, FindOptionsWhere} from "typeorm";
 @Injectable()
-export class AccountRepository extends Repository<Account>{
-    constructor(
-        @InjectRepository(Account)
-        private readonly repository: Repository<Account>
-    ) {
-        super(repository.target, repository.manager, repository.queryRunner);
-        this.repository = repository;
+export class AccountRepository extends BaseRepository{
+    constructor(dataSource: DataSource, @Inject(REQUEST) req: Request) {
+        super(dataSource, req);
     }
-    
+    async find(){
+        return this.getRepository(Account).find();
+    }
     async findByEmail(email: string): Promise<Account | null> {
-        return this.repository.findOne({ where: { email } });
+        return this.getRepository(Account).findOne({ where: { email } });
+    }
+    async findOne(id : string) : Promise<Account | null>{
+        return this.getRepository(Account).findOne({ where: { id } });
+    }
+    async update(id: string,data : DeepPartial<Account>){
+        return this.getRepository(Account).update(id,data);
+    }
+    async save(data : DeepPartial<Account>){
+        return this.getRepository(Account).save(data);
     }
 }

@@ -29,9 +29,7 @@ export class PermissionsGuard implements CanActivate {
     //ex
     const decodedToken = this.jwtService.verify(token);
     
-    const user = await this.accountRepository.findOne({
-        where: { id: decodedToken.sub }
-    });
+    const user = await this.accountRepository.findOne(decodedToken.sub);
 
     if (!user ) {
         throw new ForbiddenException('Invalid user or role');

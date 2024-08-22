@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { Profile } from "src/entity/profile";
-import { IProfile } from "src/inteface/profile/profile.inteface";
-import { CreateProfileRequest, ProfileResponse, UpdateProfileRequest } from "src/inteface/request";
+import { ProfileDTO } from "src/inteface/profile/profile.dto";
+import { CreateProfileRequest, UpdateProfileRequest } from "src/inteface/request";
 import { ProfileRepository } from "src/repository/";
 
 @Injectable()
@@ -26,7 +26,7 @@ export class ProfileService {
         await this._profileRepository.delete({ accountId });
     }
 
-    async getProfiles(): Promise<IProfile[]> {
+    async getProfiles(): Promise<ProfileDTO[]> {
         return this._profileRepository.find();
     }
 }

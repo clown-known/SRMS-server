@@ -25,6 +25,7 @@ import { Profile } from './entity/profile';
 @Module({
   imports: [
     ConfigModule.forRoot({
+      isGlobal: true,
       expandVariables: true
     }),
     TypeOrmModule.forRoot(postgresOptions),

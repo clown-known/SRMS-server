@@ -1,0 +1,44 @@
+import { Body, Controller, Get, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
+import { AccountService } from './account.service';
+import { Account } from '../../entity/account';
+import { CreateAccountRequest } from './dto/request/create-account.dto';
+import { LoginRequest } from './dto/request/login-request.dto';
+import { JWTAuthGuard } from '../../guards/jwt-auth/jwt-auth.guard';
+import { RefreshAuthGuard } from '../../guards/refresh-auth/refresh-auth.guard';
+import { PermissionsGuard } from '../../guards/permission.guard';
+import { Permissions } from '../../decorator/permission.decorator';
+import { Actions, Modules } from '../../common/enum';
+import { RegisterRequest } from './dto/request/register-request.dto';
+import { ChangePasswordRequest } from './dto/request/change-password-request.dto';
+
+@Controller('account')
+
+export class AuthenticationController {
+  constructor(private readonly authenticationService: AccountService) {}
+
+  @Post()
+  createUser(@Body() req: CreateAccountRequest) : Promise<Account>{
+    console.log(req)  
+    return this.authenticationService.createAccount(req);
+  }
+
+  @UseGuards(JWTAuthGuard)
+  @Get('test')
+  me(@Req() req){
+    return req.user;
+  }
+
+  @Post('findByEmail')
+  @UseGuards(PermissionsGuard)
+  @Permissions([
+    {module: Modules.ACCOUNT, action: Actions.GET_ALL}]
+  )
+  findByEmail(@Body() req: LoginRequest){
+    return this.authenticationService.findByEmail(req.email);
+  }
+  
+  @Put(':id/changePassword')
+  changePassword(@Param('id') id: string,@Body() req: ChangePasswordRequest){
+    return this.authenticationService.changePassword(id,req);
+  }
+}

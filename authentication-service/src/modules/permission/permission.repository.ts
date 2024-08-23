@@ -5,7 +5,8 @@ import { BaseRepository } from "src/common/base-repository";
 import { REQUEST } from "@nestjs/core";
 import { Request } from "express";
 import { Account } from "src/entity/account";
-import { CreatePermissionRequestDto } from "src/inteface/permission";
+import { CreatePermissionRequestDto } from "./dto";
+
 @Injectable()
 export class PermissionRepository extends BaseRepository {
     constructor(dataSource: DataSource, @Inject(REQUEST) req: Request) {

@@ -2,7 +2,8 @@ import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from "@
 import { Reflector } from "@nestjs/core";
 import { JwtService } from "@nestjs/jwt";
 import { PERMISSIONS_KEY, PermissionsDecorator } from "src/decorator/permission.decorator";
-import { AccountRepository, PermissionRepository } from "src/repository";
+import { AccountRepository } from "src/modules/account/account.repository";
+import { PermissionRepository } from "src/modules/permission/permission.repository";
 
 @Injectable()
 export class PermissionsGuard implements CanActivate {

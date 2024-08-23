@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
-import { CreatePermissionRequestDto } from "src/inteface/permission";
-import { PermissionRepository } from "src/repository";
+import { PermissionRepository } from "./permission.repository";
+import { CreatePermissionRequestDto } from "./dto";
 
 @Injectable()
 export class PermissionService {

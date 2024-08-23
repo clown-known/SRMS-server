@@ -1,8 +1,8 @@
 import { Body, Controller, Get, Param, Post } from "@nestjs/common";
-import { PermissionService } from "./service/permission.service";
-import { CreatePermissionRequestDto } from "./inteface/permission";
-import { AddPermissionToRoleRequestDto } from "./inteface/request/add-permission-request.dto";
-import { RoleService } from "./service/role.service";
+import { PermissionService } from "./permission.service";
+import { RoleService } from "../role/role.service";
+import { CreatePermissionRequestDto } from "./dto";
+import { AddPermissionToRoleRequestDto } from "../role/dto/request/add-permission-request.dto";
 
 @Controller('permission')
 export class PermissionController {

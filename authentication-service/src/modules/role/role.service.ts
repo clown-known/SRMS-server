@@ -1,12 +1,11 @@
 import { Injectable } from "@nestjs/common";
 import { plainToInstance } from "class-transformer";
 import { Roles } from "src/entity/role";
-import { AddPermissionToRoleRequestDto } from "src/inteface/request/add-permission-request.dto";
-import { CreateRoleRequestDto } from "src/inteface/role/request/create-role-request.dto";
-import { UpdateRoleDTO } from "src/inteface/role/request/update-role-request.dto";
-import { RoleDTO } from "src/inteface/role/role.dto";
-import { RoleRepository } from "src/repository/role.repository";
+import { CreateRoleRequestDto } from "src/modules/role/dto/request/create-role-request.dto";
+import { UpdateRoleDTO } from "src/modules/role/dto/request/update-role-request.dto";
 import { DataSource } from "typeorm";
+import { RoleRepository } from "./role.repository";
+import { AddPermissionToRoleRequestDto } from "./dto/request/add-permission-request.dto";
 @Injectable()
 export class RoleService {
     constructor(

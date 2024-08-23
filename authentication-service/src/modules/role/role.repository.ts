@@ -15,7 +15,7 @@ export class RoleRepository extends BaseRepository {
 
     async getAllRoles() {
         return await this.getRepository(Roles).find();
-      }
+    }
 
     async addPermissionToRole(roleId: string, permissionId: string) {
         const role = await this.getRepository(Roles).findOne({ 

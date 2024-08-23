@@ -1,19 +1,27 @@
 import { Inject, Injectable, Req, UseGuards } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { InjectRepository } from '@nestjs/typeorm';
 import { Account } from 'src/entity/account';
 import { ConfigService, ConfigType } from '@nestjs/config';
 import { compare } from 'bcrypt';
-import { hash } from './security';
-import { ChangePasswordRequest, CreateAccountRequest, LoginRequest, RegisterRequest, UpdateRefreshTokenRequest } from 'src/inteface/request/';
-import { refreshTokenConfig } from './config';
-import { AccountRepository } from 'src/repository';
-import { JwtPayload } from 'src/inteface';
-import { ITokenResponse, JwtResponse, RegisterResponse } from 'src/inteface/response';
+import { hash } from '../../common/security';
+
+import { refreshTokenConfig } from '../../config';
 import { plainToInstance } from 'class-transformer';
+import { AccountRepository } from './account.repository';
+import { CreateAccountRequest } from './dto/request/create-account.dto';
+import { LoginRequest } from './dto/request/login-request.dto';
+import { ITokenResponse } from './dto/token.interface';
+import { RegisterRequest } from './dto/request/register-request.dto';
+import { ChangePasswordRequest } from './dto/request/change-password-request.dto';
+import { RegisterResponse } from './dto/response/register-response.dto';
+import { JwtResponse } from './dto/response/jwt-response.dto';
+import { JwtPayload } from 'src/inteface/jwt.payload';
+import { UpdateRefreshTokenRequest } from './dto/request/update-refresh-token-request.dto';
+import { DeepPartial } from 'typeorm';
 
 @Injectable()
-export class AuthenticationService {
+export class AccountService {
+  
   constructor(
               private readonly _accountRepository : AccountRepository,
               @Inject(refreshTokenConfig.KEY) private readonly refeshTokenConfig: ConfigType<typeof refreshTokenConfig>,
@@ -25,15 +33,15 @@ export class AuthenticationService {
     const saveu = await this._accountRepository.save(data);
     return saveu;
   }
-  async login(data: LoginRequest) : Promise<ITokenResponse> {
-    const account = await this._accountRepository.findByEmail(data.email);
-    if (account && await compare(data.password, account.password)) {
-      const { accessToken, refreshToken } = await this.generateTokens(account.id, account.email);
-      await this.updateRefreshToken({accountId: account.id, refreshToken: refreshToken});
-      return { accessToken, refreshToken };
-    }
-    return null;
-  }
+  // async login(data: LoginRequest) : Promise<ITokenResponse> {
+  //   const account = await this._accountRepository.findByEmail(data.email);
+  //   if (account && await compare(data.password, account.password)) {
+  //     const { accessToken, refreshToken } = await this.generateTokens(account.id, account.email);
+  //     await this.updateRefreshToken({accountId: account.id, refreshToken: refreshToken});
+  //     return { accessToken, refreshToken };
+  //   }
+  //   return null;
+  // }
   async findByEmail(email: string): Promise<Account | null> {
     return this._accountRepository.findByEmail(email);
   }
@@ -43,7 +51,6 @@ export class AuthenticationService {
   async register(data: RegisterRequest){
     const hashedPassword = await hash(data.password);
     const account = await this._accountRepository.save({...data, password: hashedPassword});
-    
     return plainToInstance(RegisterResponse,account);
   }
 
@@ -77,16 +84,21 @@ export class AuthenticationService {
     //   return null;
     // }
   }
-  private async generateTokens(id: string, email: string): Promise<ITokenResponse> {
-    const payload : JwtPayload = { sub: id , email: email};
-    const [accessToken, refreshToken] = await Promise.all([
-      this._jwtService.sign(payload),
-      this._jwtService.sign(payload,this.refeshTokenConfig),
-    ]);
-    return { accessToken, refreshToken };
+  // private async generateTokens(id: string, email: string): Promise<ITokenResponse> {
+  //   const payload : JwtPayload = { sub: id , email: email};
+  //   const [accessToken, refreshToken] = await Promise.all([
+  //     this._jwtService.sign(payload),
+  //     this._jwtService.sign(payload,this.refeshTokenConfig),
+  //   ]);
+  //   return { accessToken, refreshToken };
+  // }
+  public async haftSave(data: DeepPartial<Account>){
+    return this._accountRepository.save(data);
   }
-
-  private async updateRefreshToken(data: UpdateRefreshTokenRequest): Promise<void> {
-    await this._accountRepository.update(data.accountId, { refreshToken: data.refreshToken });
+  public async haftUpdate(id: string, data: DeepPartial<Account>){
+    return this._accountRepository.update(id,data);
+  }
+  public async updateRefreshToken(id: string, token: string): Promise<void> {
+    await this._accountRepository.update(id, { refreshToken: token });
   }
 }

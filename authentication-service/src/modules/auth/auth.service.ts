@@ -30,13 +30,13 @@ export class AuthService{
             return { accessToken, refreshToken };
         }
         throw new UnauthorizedException('Invalid email or password');
-  }
+    }
 
     async register(data: RegisterRequest){
         const hashedPassword = await hash(data.password);
         const account = await this._accountService.haftSave({...data, password: hashedPassword});
         return plainToInstance(RegisterResponse,account);
-      }
+    }
 
     private async updateRefreshToken(data: UpdateRefreshTokenRequest): Promise<void> {
         await this._accountService.haftUpdate(data.accountId, { refreshToken: data.refreshToken });

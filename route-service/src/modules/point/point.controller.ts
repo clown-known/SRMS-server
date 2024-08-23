@@ -1,8 +1,8 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post } from "@nestjs/common";
-import { PointService } from "./service/point.service";
-import { CreatePointDTO, UpdatePointDTO } from "./interface/request";
-import { Point } from "./entity/point";
+import { PointService } from "./point.service";
 import { plainToInstance } from "class-transformer";
+import { CreatePointDTO } from "./dto/request/create-point.dto";
+import { UpdatePointDTO } from "./dto/request/update-point.dto";
 
 
 @Controller('points')
@@ -16,7 +16,7 @@ export class PointController {
 
     @Get()
     async findAll(): Promise<CreatePointDTO[]> {
-        const points = await this.pointService.findAllPoint();
+        const points = await this.pointService.findAll();
         return points.map(point => plainToInstance(CreatePointDTO, point));
     }
 

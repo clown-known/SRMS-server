@@ -1,7 +1,6 @@
-export class PointResponseDto {
+export class PointDTO {
     id: string;
     name: string;
     latitude: number;
     longitude: number;
   }
-  

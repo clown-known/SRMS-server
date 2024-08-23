@@ -1,9 +1,11 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { plainToInstance } from "class-transformer";
-import { Point } from "src/entity/point";
-import { CreatePointDTO, UpdatePointDTO } from "src/interface/request";
+import { Point } from "../../entity";
 import { Repository } from "typeorm";
+import { CreatePointDTO } from "./dto/request/create-point.dto";
+import { PointDTO } from "./dto/point.dto";
+import { UpdatePointDTO } from "./dto/request/update-point.dto";
 
 
 @Injectable()
@@ -18,17 +20,17 @@ export class PointService {
         return plainToInstance(CreatePointDTO, savedPoint);
     }
 
-    async findAllPoint(): Promise<CreatePointDTO[]> {
+    async findAll(): Promise<PointDTO[]> { 
         const points = await this.pointRepository.find();
-        return plainToInstance(CreatePointDTO, points);
+        return plainToInstance(PointDTO, points);
     }
 
-    async findOne(id: string): Promise<CreatePointDTO> {
+    async findOne(id: string): Promise<PointDTO> {
         const point = await this.pointRepository.findOne({ where: { id } });
         if (!point) {
             throw new NotFoundException('Point not found');
         }
-        return plainToInstance(CreatePointDTO, point);
+        return plainToInstance(PointDTO, point);
     }
 
     async updatePoint(id: string, updatePointDto: UpdatePointDTO): Promise<UpdatePointDTO> {

@@ -1,9 +1,11 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { plainToInstance } from "class-transformer";
-import { Route } from "src/entity/route";
-import { CreateRouteDTO, UpdateRouteDTO } from "src/interface/request";
-import { RouteRepository } from "src/repository/route.repository";
+import { UpdateRouteDTO } from "./dto/request/update-route.dto";
+import { CreateRouteDTO } from "./dto/request/create-route.dto";
+import { RouteDTO } from "./dto/route.dto";
+import { RouteRepository } from "./route.repository";
+import { Route } from "src/entity";
 
 
 @Injectable()
@@ -18,16 +20,17 @@ export class RouteService {
     return plainToInstance(CreateRouteDTO, savedRoute);
   }
 
-  async findAll(): Promise<Route[]> {
-    return this.routeRepository.find();
+  async findAll(): Promise<RouteDTO[]> {
+    const routes = await this.routeRepository.find();
+    return plainToInstance(RouteDTO, routes);
   }
 
-  async findOne(id: string): Promise<Route> {
+  async findOne(id: string): Promise<RouteDTO> { 
     const route = await this.routeRepository.findOne({ where: { id } });
-    if(!route){
+    if (!route) {
       throw new NotFoundException('Route not found');
     }
-    return route;
+    return plainToInstance(RouteDTO, route);
   }
 
   async updateRoute(id: string, updateRouteDTO: UpdateRouteDTO): Promise<UpdateRouteDTO> {
@@ -37,8 +40,11 @@ export class RouteService {
     return plainToInstance(UpdateRouteDTO, updatedRoute);
   }
 
-  async removeRoute(id: string): Promise<void> {
-    const route = await this.findOne(id);
+  async removeRoute(routeDTO: RouteDTO): Promise<void> {
+    const route = await this.routeRepository.findOne({ where: { id: routeDTO.id } });
+    if (!route) {
+        throw new NotFoundException('Route not found');
+    }
     await this.routeRepository.remove(route);
   }
 

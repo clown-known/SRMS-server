@@ -1,11 +1,11 @@
-import { Inject, Injectable } from "@nestjs/common";
-import { DataSource, Repository } from "typeorm";
+import { Inject, Injectable, Scope } from "@nestjs/common";
+import { DataSource, DeepPartial, Repository } from "typeorm";
 import { BaseRepository } from "src/common/base-repository";
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
 import { Permission, RolePermissions, Roles } from "src/entity";
 
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class RoleRepository extends BaseRepository {
     constructor(
         dataSource: DataSource, @Inject(REQUEST) req: Request
@@ -15,6 +15,16 @@ export class RoleRepository extends BaseRepository {
 
     async getAllRoles() {
         return await this.getRepository(Roles).find();
+    }
+
+    async getRoleById(roleId: string) : Promise<Roles|null>{
+        return await this.getRepository(Roles).findOne({ 
+            where: { id: roleId }
+        });
+    }
+
+    async save(data : DeepPartial<Roles>){
+        return this.getRepository(Roles).save(data);
     }
 
     async addPermissionToRole(roleId: string, permissionId: string) {

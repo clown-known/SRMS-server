@@ -1,13 +1,13 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { Inject, Injectable, Scope } from "@nestjs/common";
 import { Permission } from "src/entity/permission";
-import { DataSource, Repository } from "typeorm";
+import { DataSource, In, Repository } from "typeorm";
 import { BaseRepository } from "src/common/base-repository";
 import { REQUEST } from "@nestjs/core";
 import { Request } from "express";
 import { Account } from "src/entity/account";
 import { CreatePermissionRequestDto } from "./dto";
 
-@Injectable()
+@Injectable({scope: Scope.REQUEST})
 export class PermissionRepository extends BaseRepository {
     constructor(dataSource: DataSource, @Inject(REQUEST) req: Request) {
         super(dataSource, req);
@@ -41,7 +41,12 @@ export class PermissionRepository extends BaseRepository {
         return this.getRepository(Permission).findOne({ where: { id } });
     }
 
-    async find(){
+    async find(ids?: string[]): Promise<Permission[]> {
+        if (ids && ids.length > 0) {
+            return this.getRepository(Permission).findBy({
+                id: In(ids)
+            });
+        }
         return this.getRepository(Permission).find();
     }
 }

@@ -10,8 +10,8 @@ export class PermissionService {
   createPermission(permission: CreatePermissionRequestDto) {
     return this.permissionRepository.save(permission);
   }
-  getPermissions() {
-    return this.permissionRepository.find();
+  getPermissions(ids?: string[]) {
+    return this.permissionRepository.find(ids);
   }
   getPermissionById(id: string) {
     return this.permissionRepository.findOne(id);

@@ -18,6 +18,7 @@ import { AccountModule } from './modules/account/account.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { PermissionModule } from './modules/permission/permission.module';
 import { RoleModule } from './modules/role/role.module';
+import { ProfileModule } from './modules/profile/profile.module';
 
 @Module({
   imports: [
@@ -30,12 +31,12 @@ import { RoleModule } from './modules/role/role.module';
     JwtModule.registerAsync(jwtConfig.asProvider()),
     ConfigModule.forFeature(jwtConfig),
     ConfigModule.forFeature(refreshTokenConfig),
-    AccountModule,AuthModule,PermissionModule,RoleModule
+    AccountModule,AuthModule,PermissionModule,RoleModule,ProfileModule
   ],
   controllers: [],
   providers: [
     ConfigService,
-    JwtStrategy,RefreshTokenStrategy,
+    //JwtStrategy,RefreshTokenStrategy,
     {
       provide: APP_INTERCEPTOR,
       useClass: ResponseInterceptor,

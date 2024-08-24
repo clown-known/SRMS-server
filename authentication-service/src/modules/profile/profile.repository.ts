@@ -1,14 +1,51 @@
-import { Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
+import { BadRequestException, Inject, Injectable, Scope } from "@nestjs/common";
+import { REQUEST } from "@nestjs/core";
+import { plainToInstance } from "class-transformer";
+import { Request } from "express";
+import { BaseRepository } from "src/common/base-repository";
 import { Profile } from "src/entity/profile";
-import { Repository } from "typeorm";
-@Injectable()
-export class ProfileRepository extends Repository<Profile>{
-    constructor(
-        @InjectRepository(Profile)
-        private readonly repository: Repository<Profile>
-    ) {
-        super(repository.target, repository.manager, repository.queryRunner);
-        this.repository = repository;
+import { DataSource, DeepPartial, In, Repository } from "typeorm";
+import { ProfileDTO } from "./dto/profile.dto";
+import { CreateProfileRequest } from "./dto/request/create-profile-request.dto";
+import { UpdateProfileRequest } from "./dto/request/update-profile-request.dto";
+@Injectable({scope:Scope.REQUEST})
+export class ProfileRepository extends BaseRepository{
+    constructor(dataSource: DataSource, @Inject(REQUEST) req: Request) {
+        super(dataSource, req);
+    }
+
+    async getProfile(id: string){
+        const data = await this.getRepository(Profile).findOne({where:{accountId:id}});
+        return plainToInstance(ProfileDTO,data)
+    }
+    //: Promise<ProfileDTO|null>
+    async getProfileByAccountId(id: string){
+        const data = await this.getRepository(Profile).findOne({where:{accountId:id}});
+        if(data==null) return null;
+        return plainToInstance(ProfileDTO,data);
+    }
+    async find(id?: string[]){
+        if (id && id.length > 0) {
+            return await this.getRepository(Profile).findBy({
+                id: In(id)
+            });
+        }
+        return await this.getRepository(Profile).find();
+    }
+    async save(accountId: string, data: DeepPartial<CreateProfileRequest>){
+        //if(this.getProfileByAccountId(accountId)!=null)
+            //throw new BadRequestException('account aleady exist!');
+        const saved = await this.getRepository(Profile).save({...data,accountId});
+        return plainToInstance(ProfileDTO,saved);
+    }
+    async update(accountId: string, data: UpdateProfileRequest){
+        const profile = await this.getProfileByAccountId(accountId);
+        if(profile==null)
+            throw new BadRequestException('account is not exist!');
+        const saved = await this.getRepository(Profile).update(profile.id,{...data}as Profile);
+        return plainToInstance(ProfileDTO,saved);
+    }
+    async delete(accountId: string){
+        return await this.getRepository(Profile).softDelete({accountId});
     }
 }

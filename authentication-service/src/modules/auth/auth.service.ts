@@ -1,4 +1,4 @@
-import { Inject, Injectable, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, Inject, Injectable, UnauthorizedException } from "@nestjs/common";
 import { ConfigService, ConfigType } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { refreshTokenConfig } from "src/config";
@@ -13,6 +13,7 @@ import { RegisterRequest } from "./dto/request/register-request.dto";
 import { RegisterResponse } from "./dto/response/register-response.dto";
 import { plainToInstance } from "class-transformer";
 import { hash } from "src/common/security";
+import { ProfileService } from "../profile/profile.service";
 
 @Injectable()
 export class AuthService{
@@ -20,7 +21,8 @@ export class AuthService{
         @Inject(refreshTokenConfig.KEY) private readonly refeshTokenConfig: ConfigType<typeof refreshTokenConfig>,
         private readonly _jwtService: JwtService,
         private readonly _configService: ConfigService,
-        private readonly _accountService: AccountService
+        private readonly _accountService: AccountService,
+        private readonly _profileService: ProfileService
     ){}
     async login(data: LoginRequest) : Promise<ITokenResponse> {
         const account = await this._accountService.findByEmail(data.email);
@@ -33,9 +35,12 @@ export class AuthService{
     }
 
     async register(data: RegisterRequest){
+        console.log( await this._accountService.findByEmail(data.email));
+        if(await this._accountService.findByEmail(data.email)!=null) throw new BadRequestException('email aready exist!');
         const hashedPassword = await hash(data.password);
         const account = await this._accountService.haftSave({...data, password: hashedPassword});
-        return plainToInstance(RegisterResponse,account);
+        const profile = await this._profileService.createProfile(account.id,data);
+        return plainToInstance(RegisterResponse,{...account,profile});
     }
 
     private async updateRefreshToken(data: UpdateRefreshTokenRequest): Promise<void> {

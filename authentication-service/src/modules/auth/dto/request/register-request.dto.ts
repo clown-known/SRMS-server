@@ -9,11 +9,16 @@ export class RegisterRequest {
   password: string;
   @IsString()
   @IsNotEmpty()
-  name: string;
+  firstName: string;
   @IsString()
   @IsNotEmpty()
-  phone: string;
+  lastName: string;
+  @IsString()
+  @IsNotEmpty()
+  phoneNumber: string;
   @IsString()
   @IsNotEmpty()
   address: string;
+  @IsNotEmpty()
+  dateOfBirth: Date;
 }

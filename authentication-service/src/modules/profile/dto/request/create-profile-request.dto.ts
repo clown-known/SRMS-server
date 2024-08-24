@@ -1,23 +1,23 @@
 import { IsNotEmpty, IsString } from "class-validator";
 
 export class CreateProfileRequest {
-    @IsString()
-    @IsNotEmpty()
+    // @IsString()
+    // @IsNotEmpty()
     firstName: string;
 
-    @IsString()
-    @IsNotEmpty()
+    // @IsString()
+    // @IsNotEmpty()
     lastName: string;
 
-    @IsString()
-    @IsNotEmpty()
+    // @IsString()
+    // @IsNotEmpty()
     phoneNumber: string;
 
-    @IsString()
-    @IsNotEmpty()
+    // @IsString()
+    // @IsNotEmpty()
     address: string;
  
-    @IsString()
-    @IsNotEmpty()
-    dateOfBirth: Date;
+    // @IsString()
+    // @IsNotEmpty()
+    dateOfBirth?: Date;
 }

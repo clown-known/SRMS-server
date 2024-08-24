@@ -4,6 +4,7 @@ import { ProfileRepository } from "./profile.repository";
 import { CreateProfileRequest } from "./dto/request/create-profile-request.dto";
 import { UpdateProfileRequest } from "./dto/request/update-profile-request.dto";
 import { ProfileDTO } from "./dto/profile.dto";
+import { DeepPartial } from "typeorm";
 
 @Injectable()
 export class ProfileService {
@@ -11,20 +12,20 @@ export class ProfileService {
         private readonly _profileRepository: ProfileRepository
     ) {}
 
-    async getProfile(accountId: string): Promise<Profile> {
-        return this._profileRepository.findOne({ where: { accountId } });
+    async getProfile(accountId: string): Promise<ProfileDTO> {
+        return this._profileRepository.getProfile(accountId);
     }
 
-    async createProfile(profile: CreateProfileRequest): Promise<Profile> {
-        return this._profileRepository.save(profile);
+    async createProfile(accountId:string, profile: DeepPartial<CreateProfileRequest>) {
+        return this._profileRepository.save(accountId,profile);
     }
 
-    async updateProfile(profile: UpdateProfileRequest): Promise<Profile> {
-        return this._profileRepository.save(profile);
+    async updateProfile(accountId :string, profile: UpdateProfileRequest) {
+        return this._profileRepository.update(accountId,profile);
     }
 
     async deleteProfile(accountId: string): Promise<void> {
-        await this._profileRepository.delete({ accountId });
+        await this._profileRepository.delete(accountId);
     }
 
     async getProfiles(): Promise<ProfileDTO[]> {

@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Post, Req, UseGuards, UseInterceptors } from "@nestjs/common";
 import { LoginRequest } from "./dto/request/login-request.dto";
 import { AuthService } from "./auth.service";
 import { RegisterRequest } from "./dto/request/register-request.dto";
 import { RefreshAuthGuard } from "src/guards/refresh-auth/refresh-auth.guard";
 import { JWTAuthGuard } from "src/guards/jwt-auth/jwt-auth.guard";
+import { TransactionInterceptor } from "src/common/transaction.interceptor";
 
 @Controller('auth')
 export class AuthenticationController{
@@ -22,6 +23,7 @@ export class AuthenticationController{
     }
     
     @Post('register')
+    @UseInterceptors(TransactionInterceptor)
     register(@Body() req: RegisterRequest){
         return this.authenticationService.register(req);
     }

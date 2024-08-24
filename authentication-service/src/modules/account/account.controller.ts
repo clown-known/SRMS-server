@@ -4,11 +4,9 @@ import { Account } from '../../entity/account';
 import { CreateAccountRequest } from './dto/request/create-account.dto';
 import { LoginRequest } from './dto/request/login-request.dto';
 import { JWTAuthGuard } from '../../guards/jwt-auth/jwt-auth.guard';
-import { RefreshAuthGuard } from '../../guards/refresh-auth/refresh-auth.guard';
 import { PermissionsGuard } from '../../guards/permission.guard';
 import { Permissions } from '../../decorator/permission.decorator';
 import { Actions, Modules } from '../../common/enum';
-import { RegisterRequest } from './dto/request/register-request.dto';
 import { ChangePasswordRequest } from './dto/request/change-password-request.dto';
 
 @Controller('account')

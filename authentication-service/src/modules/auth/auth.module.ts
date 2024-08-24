@@ -8,6 +8,7 @@ import { RefreshTokenStrategy } from "src/stragery/refreshToken.strategy";
 import { AuthenticationController } from "./auth.controller";
 import { AuthService } from "./auth.service";
 import { AccountModule } from "../account/account.module";
+import { ProfileModule } from "../profile/profile.module";
 
 @Global()
 @Module({
@@ -16,7 +17,7 @@ import { AccountModule } from "../account/account.module";
     JwtModule.registerAsync(jwtConfig.asProvider()),
     ConfigModule.forFeature(jwtConfig),
     ConfigModule.forFeature(refreshTokenConfig),
-    AccountModule
+    AccountModule,ProfileModule
   ],
   providers: [JwtStrategy, RefreshTokenStrategy, ConfigService,AuthService],
   controllers:[AuthenticationController],

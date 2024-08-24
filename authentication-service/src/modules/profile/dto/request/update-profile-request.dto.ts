@@ -3,10 +3,6 @@ import { IsNotEmpty, IsString } from "class-validator";
 export class UpdateProfileRequest {
     @IsString()
     @IsNotEmpty()
-    accountId: string;
-
-    @IsString()
-    @IsNotEmpty()
     firstName: string;
 
     @IsString()

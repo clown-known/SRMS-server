@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable, Scope } from "@nestjs/common";
+import { BadRequestException, Inject, Injectable, NotFoundException, Scope } from "@nestjs/common";
 import { REQUEST } from "@nestjs/core";
 import { plainToInstance } from "class-transformer";
 import { Request } from "express";
@@ -16,10 +16,11 @@ export class ProfileRepository extends BaseRepository{
 
     async getProfile(id: string){
         const data = await this.getRepository(Profile).findOne({where:{accountId:id}});
+        if(data==null) throw new NotFoundException('profile not found!');
         return plainToInstance(ProfileDTO,data)
     }
     //: Promise<ProfileDTO|null>
-    async getProfileByAccountId(id: string){
+    async getProfileByAccountId(id: string) : Promise<ProfileDTO|null>{
         const data = await this.getRepository(Profile).findOne({where:{accountId:id}});
         if(data==null) return null;
         return plainToInstance(ProfileDTO,data);
@@ -32,9 +33,9 @@ export class ProfileRepository extends BaseRepository{
         }
         return await this.getRepository(Profile).find();
     }
-    async save(accountId: string, data: DeepPartial<CreateProfileRequest>){
-        //if(this.getProfileByAccountId(accountId)!=null)
-            //throw new BadRequestException('account aleady exist!');
+    async save(accountId: string, data: DeepPartial<CreateProfileRequest|null>){
+        if(await this.getProfileByAccountId(accountId)!=null)
+            throw new BadRequestException('account aleady exist!');
         const saved = await this.getRepository(Profile).save({...data,accountId});
         return plainToInstance(ProfileDTO,saved);
     }

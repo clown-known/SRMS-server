@@ -35,6 +35,9 @@ export class PointService {
 
     async updatePoint(id: string, updatePointDto: UpdatePointDTO): Promise<UpdatePointDTO> {
         const point = await this.findOne(id);
+        if (!point) { 
+            throw new NotFoundException('Point not found');
+        }
         Object.assign(point, updatePointDto);
         const updatedPoint = await this.pointRepository.save(point);
         return plainToInstance(UpdatePointDTO, updatedPoint);
@@ -42,6 +45,9 @@ export class PointService {
 
     async removePoint(id: string): Promise<void> {
         const point = await this.findOne(id);
+        if (!point) { 
+            throw new NotFoundException('Point not found');
+        }
         await this.pointRepository.remove(point as Point);
     }
 

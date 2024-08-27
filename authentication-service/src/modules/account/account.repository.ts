@@ -2,6 +2,7 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { REQUEST } from "@nestjs/core";
 import { Request } from "express";
 import { BaseRepository } from "src/common/base-repository";
+import { Permission } from "src/entity";
 import { Account } from "src/entity/account";
 import { DataSource, DeepPartial, FindOptionsWhere} from "typeorm";
 @Injectable({scope: Scope.REQUEST})

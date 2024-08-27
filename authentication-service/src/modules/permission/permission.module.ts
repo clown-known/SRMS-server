@@ -11,6 +11,6 @@ import { PermissionRepository } from './permission.repository';
   ],
   controllers: [PermissionController], 
   providers: [PermissionService, PermissionRepository],
-  exports: [PermissionService],
+  exports: [PermissionService, PermissionRepository],
 })
 export class PermissionModule {}

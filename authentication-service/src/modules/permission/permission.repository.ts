@@ -26,6 +26,7 @@ export class PermissionRepository extends BaseRepository {
         }
         return user.role.rolePermissions.map(rp => rp.permission);
     }
+    
     async softDelete(id: string){
         return this.getRepository(Permission).softDelete(id);
     }

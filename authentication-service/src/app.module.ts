@@ -19,14 +19,21 @@ import { AuthModule } from './modules/auth/auth.module';
 import { PermissionModule } from './modules/permission/permission.module';
 import { RoleModule } from './modules/role/role.module';
 import { ProfileModule } from './modules/profile/profile.module';
+import { RedisModule } from '@nestjs-modules/ioredis';
 
 @Module({
   imports: [
+    RedisModule.forRootAsync({
+      useFactory: () => ({
+        type: 'single',
+        url: 'redis://localhost:6379',
+      }),
+    }),
     ConfigModule.forRoot({
       expandVariables: true
     }),
     TypeOrmModule.forRoot(postgresOptions),
-    TypeOrmModule.forFeature([Account,Roles,Permission,RolePermissions,Profile]),
+
     PassportModule,
     JwtModule.registerAsync(jwtConfig.asProvider()),
     ConfigModule.forFeature(jwtConfig),

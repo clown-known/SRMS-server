@@ -29,7 +29,9 @@ export class AuthenticationController {
   @Post('findByEmail')
   @UseGuards(PermissionsGuard)
   @Permissions([
-    {module: Modules.ACCOUNT, action: Actions.GET_ALL}]
+    {module: Modules.ACCOUNT, action: Actions.CREATE},
+    {module: Modules.ACCOUNT, action: Actions.GET}
+  ]
   )
   findByEmail(@Body() req: LoginRequest){
     return this.authenticationService.findByEmail(req.email);

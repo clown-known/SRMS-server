@@ -5,11 +5,13 @@ import { RegisterRequest } from "./dto/request/register-request.dto";
 import { RefreshAuthGuard } from "src/guards/refresh-auth/refresh-auth.guard";
 import { JWTAuthGuard } from "src/guards/jwt-auth/jwt-auth.guard";
 import { TransactionInterceptor } from "src/common/transaction.interceptor";
+import { InjectRedis } from "@nestjs-modules/ioredis";
+import { Redis } from "ioredis";
 
 @Controller('auth')
 export class AuthenticationController{
-    constructor(private readonly authenticationService: AuthService){
-
+    constructor(private readonly authenticationService: AuthService,
+    ){
     }
     @Post('login')
     login(@Body() req: LoginRequest){

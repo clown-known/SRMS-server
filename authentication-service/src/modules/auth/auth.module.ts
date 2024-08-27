@@ -9,6 +9,8 @@ import { AuthenticationController } from "./auth.controller";
 import { AuthService } from "./auth.service";
 import { AccountModule } from "../account/account.module";
 import { ProfileModule } from "../profile/profile.module";
+import { PermissionModule } from "../permission/permission.module";
+import { AuthRepository } from "./auth.repository";
 
 @Global()
 @Module({
@@ -17,10 +19,10 @@ import { ProfileModule } from "../profile/profile.module";
     JwtModule.registerAsync(jwtConfig.asProvider()),
     ConfigModule.forFeature(jwtConfig),
     ConfigModule.forFeature(refreshTokenConfig),
-    AccountModule,ProfileModule
+    AccountModule,ProfileModule,PermissionModule
   ],
-  providers: [JwtStrategy, RefreshTokenStrategy, ConfigService,AuthService],
+  providers: [JwtStrategy, RefreshTokenStrategy, ConfigService,AuthService,AuthRepository],
   controllers:[AuthenticationController],
-  exports: [JwtModule, JwtStrategy, RefreshTokenStrategy],
+  exports: [JwtModule, JwtStrategy, RefreshTokenStrategy,AuthService],
 })
 export class AuthModule {}

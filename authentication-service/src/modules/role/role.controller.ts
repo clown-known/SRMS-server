@@ -1,9 +1,10 @@
-import { Body, Controller, Post, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post, UseInterceptors } from "@nestjs/common";
 import { RoleService } from "./role.service";
 import { AddPermissionToRoleRequestDto } from "./dto/request/add-permission-request.dto";
 import { TransactionInterceptor } from "src/common/transaction.interceptor";
 import { CreateRoleRequestDto } from "./dto/request/create-role-request.dto";
 import { RoleDTO } from "./dto/role.dto";
+import { Test } from "./dto/request/test";
 
 @Controller('role')
 export class RoleController {
@@ -15,9 +16,14 @@ export class RoleController {
     @Post('create')
     @UseInterceptors(TransactionInterceptor)
     async createRole(@Body() role: CreateRoleRequestDto): Promise<RoleDTO> {
-        //ex
-        console.log(role);
         return this.roleService.createRole(role);
     }
-    
+    @Post('delete')
+    async deletePermissionOfRole(@Body() data : Test) {
+        return this.roleService.deletePermissionOfRole(data.roleId, data.permissionId);
+    }
+    @Get('test')
+    async test(){
+        return this.roleService.test();
+    }
 }

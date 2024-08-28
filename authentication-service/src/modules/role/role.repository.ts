@@ -7,19 +7,17 @@ import { Permission, RolePermissions, Roles } from "src/entity";
 
 @Injectable({ scope: Scope.REQUEST })
 export class RoleRepository extends BaseRepository {
-    constructor(
-        dataSource: DataSource, @Inject(REQUEST) req: Request
-    ) {
+    constructor(dataSource: DataSource, @Inject(REQUEST) req: Request) {
         super(dataSource, req);
     }
-
+    
     async getAllRoles() {
         return await this.getRepository(Roles).find();
     }
 
-    async getRoleById(roleId: string) : Promise<Roles|null>{
+    async getRoleById(id: string) : Promise<Roles|null>{
         return await this.getRepository(Roles).findOne({ 
-            where: { id: roleId }
+            where: { id : id}
         });
     }
 

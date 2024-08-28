@@ -45,6 +45,10 @@ export class AccountService {
   async findByEmail(email: string): Promise<Account | null> {
     return this._accountRepository.findByEmail(email);
   }
+  async findById(id: string): Promise<Account | null> {
+    console.log(await this._accountRepository.findOne(id));
+    return await this._accountRepository.findOne(id);
+  }
   async logout(id: string) {
     return this._accountRepository.update(id, { refreshToken: null });
   }

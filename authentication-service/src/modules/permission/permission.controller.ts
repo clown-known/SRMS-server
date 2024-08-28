@@ -15,5 +15,8 @@ export class PermissionController {
     createPermission(@Body() permission: CreatePermissionRequestDto) {
         return this.permissionService.createPermission(permission);
     }
-    
+    @Post()
+    getbyid(@Body() id:string){
+        return this.permissionService.getPermissionById(id);
+    }
 }

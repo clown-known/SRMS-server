@@ -3,6 +3,7 @@ import { Permission } from 'src/entity/permission';
 import { Profile } from 'src/entity/profile';
 import { Roles } from 'src/entity/role';
 import { RolePermissions } from 'src/entity/role.permissions';
+import { RolePermissionSubscriber } from 'src/subcriber/role-permission.subscriber';
 import { DataSource, DataSourceOptions } from 'typeorm';
 require('dotenv').config();
 // use this file for running migration
@@ -15,6 +16,7 @@ export const postgresOptions: DataSourceOptions = {
       database: process.env.POSTGRES_DATABASE,
       entities: [Account,Roles,Permission,Profile,RolePermissions],
       synchronize: true,
+      subscribers:[RolePermissionSubscriber]
     
 };
 console.log(postgresOptions)

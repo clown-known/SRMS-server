@@ -36,6 +36,11 @@ export class AuthenticationController {
   findByEmail(@Body() req: LoginRequest){
     return this.authenticationService.findByEmail(req.email);
   }
+  @Get(':id')
+  findById(@Param('id') id: string){
+    console.log(id) 
+    return this.authenticationService.findById(id);
+  } 
   
   @Put(':id/changePassword')
   changePassword(@Param('id') id: string,@Body() req: ChangePasswordRequest){

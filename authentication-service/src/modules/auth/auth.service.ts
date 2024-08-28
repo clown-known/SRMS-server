@@ -35,6 +35,9 @@ export class AuthService{
     async getPermissionsOfUser(id: string) {
         return this._authRepository.getPermissionsOfUser(id);
     }
+    // async getAllUsersWithPermission(permissionId: string) {
+    //     return this._authRepository.getAllUsersWithPermission(permissionId);
+    // }
     async login(data: LoginRequest) : Promise<ITokenResponse> {
         const account = await this._accountService.findByEmail(data.email);
         if (account && await compare(data.password, account.password)) {
@@ -44,7 +47,7 @@ export class AuthService{
             const permission = await this._permissionSerivce.getPermissionsOfUser(account.id);
             await this.redis.set('permission:'+account.id,JSON.stringify(permission));
             await this.redis.expire(account.id,86400)
-
+            // await this.redis.del('permission:'+account.id)
             return { accessToken, refreshToken };
         }
         throw new UnauthorizedException('Invalid email or password');

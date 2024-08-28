@@ -20,6 +20,7 @@ import { PermissionModule } from './modules/permission/permission.module';
 import { RoleModule } from './modules/role/role.module';
 import { ProfileModule } from './modules/profile/profile.module';
 import { RedisModule } from '@nestjs-modules/ioredis';
+import { RolePermissionSubscriber } from './subcriber/role-permission.subscriber';
 
 @Module({
   imports: [

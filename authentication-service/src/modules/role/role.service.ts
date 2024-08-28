@@ -34,4 +34,10 @@ export class RoleService {
     async updateRole(id: string,role: UpdateRoleDTO){
 
     }
+    async deletePermissionOfRole(roleId: string,permisisonId : string){
+        return this.rolePermissionRepository.deletePermissionOfRole(roleId,permisisonId);
+    }
+    async test(){
+        return this.rolePermissionRepository.test();
+    }
 }

@@ -10,7 +10,16 @@ export class AuthRepository extends BaseRepository {
     constructor(dataSource: DataSource, @Inject(REQUEST) req: Request) {
         super(dataSource, req);
     }
-
+    // async getAllUsersWithPermission(permissionId: string): Promise<Account[]> {
+    //     return this.getRepository(Account).query(
+    //       `SELECT a.*
+    //        FROM account a
+    //        JOIN roles r ON a.roleid = r.id
+    //        JOIN role_permissions rp ON r.id = rp.role_id
+    //        WHERE rp.permission_id = $1`,
+    //       [permissionId],
+    //     );
+    //   }
     async getPermissionsOfUser(id: string): Promise<Permission[]> {
         const user = await this.getRepository(Account).findOne({
             where: { id },

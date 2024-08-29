@@ -1,11 +1,13 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { Permission } from "src/entity/permission";
-import { DataSource, In, Repository } from "typeorm";
+import { DataSource, In, Like, Repository } from "typeorm";
 import { BaseRepository } from "src/common/base-repository";
 import { REQUEST } from "@nestjs/core";
 import { Request } from "express";
 import { Account } from "src/entity/account";
 import { CreatePermissionRequestDto } from "./dto";
+import { PermissionDTO } from "./dto/permission.dto";
+import { PageOptionsDto } from "src/common/pagination/page-options.dto";
 
 @Injectable({scope: Scope.REQUEST})
 export class PermissionRepository extends BaseRepository {
@@ -42,13 +44,22 @@ export class PermissionRepository extends BaseRepository {
         return this.getRepository(Permission).findOne({ where: { id } });
     }
 
-    async find(ids?: string[]): Promise<Permission[]> {
+    async find(ids?: string[]): Promise<PermissionDTO[]> {
         if (ids && ids.length > 0) {
             return this.getRepository(Permission).findBy({
                 id: In(ids)
             });
         }
         return this.getRepository(Permission).find();
+    }
+    async findWithOptions(pageOptionsDto?: PageOptionsDto,): Promise<PermissionDTO[]>{
+        return this.getRepository(Permission).find({
+            skip : pageOptionsDto.skip,
+            take : pageOptionsDto.take,
+            where:{
+                module : Like('%'+pageOptionsDto.searchKey+'%')
+            }
+        })
     }
 }
 

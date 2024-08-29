@@ -18,7 +18,7 @@ export class RolePermissionSubscriber implements EntitySubscriberInterface<RoleP
     // }
 
     listenTo() {
-        console.log('action : '); 
+        // console.log('action : '); 
         return RolePermissions;
     }
     async beforeRemove(event: RemoveEvent<RolePermissions>): Promise<void> {

@@ -20,16 +20,20 @@ export class Account extends BaseEntity{
     @Column({
         nullable:true
     })
-
+    refreshToken :string;
+    
     @Column({
         nullable:true
     })
-    refreshToken :string;
-
     roleId :string;
 
     @ManyToOne(() => Roles, role => role.accounts)
     role :Roles;
+
+    @Column({
+        nullable:true
+    })
+    profileId?: string;
 
     @OneToOne(() => Profile, profile => profile.account)
     @JoinColumn()

@@ -18,6 +18,10 @@ import { JwtResponse } from './dto/response/jwt-response.dto';
 import { JwtPayload } from 'src/inteface/jwt.payload';
 import { UpdateRefreshTokenRequest } from './dto/request/update-refresh-token-request.dto';
 import { DeepPartial } from 'typeorm';
+import { PageOptionsDto } from 'src/common/pagination/page-options.dto';
+import { PageMetaDto } from 'src/common/pagination/page-meta.dto';
+import { PageDto } from 'src/common/pagination/page.dto';
+import { AccountDTO } from './dto/account.dto';
 
 @Injectable()
 export class AccountService {
@@ -33,15 +37,6 @@ export class AccountService {
     const saveu = await this._accountRepository.save(data);
     return saveu;
   }
-  // async login(data: LoginRequest) : Promise<ITokenResponse> {
-  //   const account = await this._accountRepository.findByEmail(data.email);
-  //   if (account && await compare(data.password, account.password)) {
-  //     const { accessToken, refreshToken } = await this.generateTokens(account.id, account.email);
-  //     await this.updateRefreshToken({accountId: account.id, refreshToken: refreshToken});
-  //     return { accessToken, refreshToken };
-  //   }
-  //   return null;
-  // }
   async findByEmail(email: string): Promise<Account | null> {
     return this._accountRepository.findByEmail(email);
   }
@@ -69,8 +64,10 @@ export class AccountService {
     }
   }
 
-  async getAllAccounts(){
-    return await this._accountRepository.find();
+  async getAllAccounts(pageOptionsDto: PageOptionsDto,) : Promise<PageDto<AccountDTO>>{
+    const items = await this._accountRepository.findWithOption(pageOptionsDto);
+    const pageMetaDto = new PageMetaDto({ itemCount : items.length, pageOptionsDto });
+    return new PageDto(items, pageMetaDto);
   }
     async refreshToken(refreshToken: string) : Promise<JwtResponse> {
     //try {
@@ -88,14 +85,6 @@ export class AccountService {
     //   return null;
     // }
   }
-  // private async generateTokens(id: string, email: string): Promise<ITokenResponse> {
-  //   const payload : JwtPayload = { sub: id , email: email};
-  //   const [accessToken, refreshToken] = await Promise.all([
-  //     this._jwtService.sign(payload),
-  //     this._jwtService.sign(payload,this.refeshTokenConfig),
-  //   ]);
-  //   return { accessToken, refreshToken };
-  // }
   public async haftSave(data: DeepPartial<Account>){
     return this._accountRepository.save(data);
   }

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { AccountService } from './account.service';
 import { Account } from '../../entity/account';
 import { CreateAccountRequest } from './dto/request/create-account.dto';
@@ -8,16 +8,19 @@ import { PermissionsGuard } from '../../guards/permission.guard';
 import { Permissions } from '../../decorator/permission.decorator';
 import { Actions, Modules } from '../../common/enum';
 import { ChangePasswordRequest } from './dto/request/change-password-request.dto';
+import { PageOptionsDto } from 'src/common/pagination/page-options.dto';
+import { AccountDTO } from './dto/account.dto';
+import { PageDto } from 'src/common/pagination/page.dto';
 
 @Controller('account')
 
 export class AuthenticationController {
-  constructor(private readonly authenticationService: AccountService) {}
+  constructor(private readonly accountService: AccountService) {}
 
   @Post()
   createUser(@Body() req: CreateAccountRequest) : Promise<Account>{
     console.log(req)  
-    return this.authenticationService.createAccount(req);
+    return this.accountService.createAccount(req);
   }
 
   @UseGuards(JWTAuthGuard)
@@ -34,16 +37,22 @@ export class AuthenticationController {
   ]
   )
   findByEmail(@Body() req: LoginRequest){
-    return this.authenticationService.findByEmail(req.email);
+    return this.accountService.findByEmail(req.email);
   }
   @Get(':id')
   findById(@Param('id') id: string){
     console.log(id) 
-    return this.authenticationService.findById(id);
+    return this.accountService.findById(id);
   } 
   
   @Put(':id/changePassword')
   changePassword(@Param('id') id: string,@Body() req: ChangePasswordRequest){
-    return this.authenticationService.changePassword(id,req);
+    return this.accountService.changePassword(id,req);
+  }
+
+  @Get()
+  getAllAccount( @Query() pageOptionsDto: PageOptionsDto,):Promise<PageDto<AccountDTO>>{
+    console.log(pageOptionsDto)
+    return this.accountService.getAllAccounts(pageOptionsDto);
   }
 }

@@ -1,9 +1,11 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { DataSource, DeepPartial, Repository } from "typeorm";
+import { DataSource, DeepPartial, FindOptionsOrder, Like, Repository } from "typeorm";
 import { BaseRepository } from "src/common/base-repository";
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
 import { Permission, RolePermissions, Roles } from "src/entity";
+import { PageOptionsDto } from "src/common/pagination/page-options.dto";
+import { RoleDTO } from "./dto/role.dto";
 
 @Injectable({ scope: Scope.REQUEST })
 export class RoleRepository extends BaseRepository {
@@ -11,8 +13,22 @@ export class RoleRepository extends BaseRepository {
         super(dataSource, req);
     }
     
-    async getAllRoles() {
+    async find() {
         return await this.getRepository(Roles).find();
+    }
+    async findWithOptions(pageOptionsDto: PageOptionsDto,): Promise<RoleDTO[]>{
+        const order: FindOptionsOrder<Roles> = {
+            ...(pageOptionsDto.orderBy? { [pageOptionsDto.orderBy]: pageOptionsDto.order } : {}),
+        }    
+        return await this.getRepository(Roles).find({
+            relations: ['rolePermissions', 'rolePermissions.permission'],
+            take: pageOptionsDto.take,
+            order,
+            skip: pageOptionsDto.skip,
+            where:{
+                name : Like('%'+pageOptionsDto.searchKey+'%')
+            }
+        });
     }
 
     async getRoleById(id: string) : Promise<Roles|null>{

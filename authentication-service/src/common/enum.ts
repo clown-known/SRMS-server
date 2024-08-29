@@ -13,3 +13,7 @@ export enum Actions {
   GET_ALL = 'get_all',
   GET_RELATED = 'get_related',
 }
+export enum Order {
+  ASC = "ASC",
+  DESC = "DESC",
+}

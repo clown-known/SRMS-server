@@ -5,6 +5,7 @@ import { BaseRepository } from "src/common/base-repository";
 import { Permission, Roles } from "src/entity";
 import { RolePermissions } from "src/entity/role.permissions";
 import { DataSource } from "typeorm";
+import { PermissionDTO } from "../permission/dto/permission.dto";
 
 @Injectable({ scope: Scope.REQUEST })
 export class RolePermissionRepository extends BaseRepository {
@@ -45,7 +46,7 @@ export class RolePermissionRepository extends BaseRepository {
             select: ['id', 'name'] // Add other necessary fields
         });
     }
-    async addPermissionToRole(role: Roles, permissions: Permission[]) {
+    async addPermissionToRole(role: Roles, permissions: PermissionDTO[]) {
         const items = permissions.map((e) => {
             return {
                 role: role,

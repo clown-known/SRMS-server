@@ -25,18 +25,14 @@ export class ProfileRepository extends BaseRepository{
         if(data==null) return null;
         return plainToInstance(ProfileDTO,data);
     }
-    async find(id?: string[]){
+    async find(id?: string[]) : Promise<ProfileDTO[]>{
         if (id && id.length > 0) {
-            return await this.getRepository(Profile).findBy({
-                id: In(id)
-            });
+            return plainToInstance (ProfileDTO, (await this.getRepository(Profile).findBy({id: In(id)})));
         }
-        return await this.getRepository(Profile).find();
+        return plainToInstance(ProfileDTO,(await this.getRepository(Profile).find()));
     }
-    async save(accountId: string, data: DeepPartial<CreateProfileRequest|null>){
-        if(await this.getProfileByAccountId(accountId)!=null)
-            throw new BadRequestException('account aleady exist!');
-        const saved = await this.getRepository(Profile).save({...data,accountId});
+    async save(data: DeepPartial<CreateProfileRequest|null>){
+        const saved = await this.getRepository(Profile).save({...data});
         return plainToInstance(ProfileDTO,saved);
     }
     async update(accountId: string, data: UpdateProfileRequest){

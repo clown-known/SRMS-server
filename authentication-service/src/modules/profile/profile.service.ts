@@ -16,8 +16,8 @@ export class ProfileService {
         return this._profileRepository.getProfile(accountId);
     }
 
-    async createProfile(accountId:string, profile: DeepPartial<CreateProfileRequest>) {
-        return this._profileRepository.save(accountId,profile);
+    async createProfile(profile: DeepPartial<CreateProfileRequest>) {
+        return this._profileRepository.save(profile);
     }
 
     async updateProfile(accountId :string, profile: UpdateProfileRequest) {

@@ -28,8 +28,8 @@ export class ProfileController {
     }
     @Post()
     @UseGuards(JWTAuthGuard)
-    createProfile(@Req() req,@Body() data: CreateProfileRequest){
-        return this.profileService.createProfile(req.user.id,data);
+    createProfile(@Body() data: CreateProfileRequest){
+        return this.profileService.createProfile(data);
     }
     @Put()
     @UseGuards(JWTAuthGuard)

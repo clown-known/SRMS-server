@@ -46,7 +46,7 @@ export class PermissionsGuard implements CanActivate {
     //     throw new ForbiddenException('Invalid user or role');
     // }
     // get permission from cache if not exist check in database, and set it to cache for another request
-    const getUserPermissionFromDB = async () =>{
+    const getUserPermissionFromDBAndPutToCache = async () =>{
         const permissions = await this.authService.getPermissionsOfUser(decodedToken.sub);
         if (permissions) {
             await this.redis.set('permission:'+decodedToken.sub, JSON.stringify(permissions));
@@ -57,7 +57,7 @@ export class PermissionsGuard implements CanActivate {
     const getUserPermissions = async () => {
         const cachedPermissions = await this.redis.get('permission:'+decodedToken.sub);
         if (cachedPermissions) return JSON.parse(cachedPermissions);
-        return getUserPermissionFromDB();
+        return getUserPermissionFromDBAndPutToCache();
     };
     const userPermissions = await getUserPermissions();
     // map permission to partern
@@ -71,7 +71,7 @@ export class PermissionsGuard implements CanActivate {
             permissionKeys.includes(`${permission.module}:${permission.action}`)); 
     }
     if(hasPermission(userPermissions)) return true;
-    if (!hasPermission(await getUserPermissionFromDB)) {
+    if (!hasPermission(await getUserPermissionFromDBAndPutToCache())) {
         throw new ForbiddenException('Insufficient permissions');
     }
     return true;

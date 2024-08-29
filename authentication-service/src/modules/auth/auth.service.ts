@@ -57,8 +57,8 @@ export class AuthService{
         console.log( await this._accountService.findByEmail(data.email));
         if(await this._accountService.findByEmail(data.email)!=null) throw new BadRequestException('email aready exist!');
         const hashedPassword = await hash(data.password);
-        const account = await this._accountService.haftSave({...data, password: hashedPassword});
-        const profile = await this._profileService.createProfile(account.id,data);
+        const profile = await this._profileService.createProfile(data);
+        const account = await this._accountService.haftSave({...data, password: hashedPassword,profileId: profile.id,profile:profile});
         return plainToInstance(RegisterResponse,{...account,profile});
     }
 

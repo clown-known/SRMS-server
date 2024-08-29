@@ -8,6 +8,8 @@ import { Account } from "src/entity/account";
 import { DataSource, DeepPartial, FindOptionsOrder, FindOptionsWhere, Like} from "typeorm";
 import { AccountDTO } from "./dto/account.dto";
 import { PageDto } from "src/common/pagination/page.dto";
+import { plainToInstance } from "class-transformer";
+import { transformToDTO } from "src/common/transform.util";
 @Injectable({scope: Scope.REQUEST})
 export class AccountRepository extends BaseRepository{
     constructor(dataSource: DataSource, @Inject(REQUEST) req: Request) {
@@ -31,13 +33,7 @@ export class AccountRepository extends BaseRepository{
                 email : Like('%'+pageOptionsDto.searchKey+'%')
             }
         });
-        return result.map(e => {
-            return {
-                email:e.email,
-                role:e.role,
-                profile:e.profile
-            } as AccountDTO;
-        });
+        return transformToDTO(AccountDTO,result);
     }
     async findByEmail(email: string): Promise<Account | null> {
         return this.getRepository(Account).findOne({ where: { email } });

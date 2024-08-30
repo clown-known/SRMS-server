@@ -6,6 +6,7 @@ import { Request } from 'express';
 import { Permission, RolePermissions, Roles } from "src/entity";
 import { PageOptionsDto } from "src/common/pagination/page-options.dto";
 import { RoleDTO } from "./dto/role.dto";
+import { UpdateRoleDTO } from "./dto/request/update-role-request.dto";
 
 @Injectable({ scope: Scope.REQUEST })
 export class RoleRepository extends BaseRepository {
@@ -16,14 +17,10 @@ export class RoleRepository extends BaseRepository {
     async find() {
         return await this.getRepository(Roles).find();
     }
-    async findWithOptions(pageOptionsDto: PageOptionsDto,): Promise<RoleDTO[]>{
-        const order: FindOptionsOrder<Roles> = {
-            ...(pageOptionsDto.orderBy? { [pageOptionsDto.orderBy]: pageOptionsDto.order } : {}),
-        }    
+    async findWithOptions(pageOptionsDto: PageOptionsDto,): Promise<RoleDTO[]>{    
         return await this.getRepository(Roles).find({
             relations: ['rolePermissions', 'rolePermissions.permission'],
             take: pageOptionsDto.take,
-            order,
             skip: pageOptionsDto.skip,
             where:{
                 name : Like('%'+pageOptionsDto.searchKey+'%')
@@ -39,6 +36,14 @@ export class RoleRepository extends BaseRepository {
 
     async save(data : DeepPartial<Roles>){
         return this.getRepository(Roles).save(data);
+    }
+
+    async delete(id: string){
+        return this.getRepository(Roles).softDelete(id)
+    }
+
+    async updateRole(id: string, data: UpdateRoleDTO){
+        return this.getRepository(Roles).update(id,data);
     }
 
     async addPermissionToRole(roleId: string, permissionId: string) {

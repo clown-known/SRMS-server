@@ -1,4 +1,4 @@
-import { BadRequestException, Get, Inject, Injectable, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, ForbiddenException, Get, Inject, Injectable, UnauthorizedException } from "@nestjs/common";
 import { ConfigService, ConfigType } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { refreshTokenConfig } from "src/config";
@@ -40,15 +40,21 @@ export class AuthService{
     // }
     async login(data: LoginRequest) : Promise<ITokenResponse> {
         const account = await this._accountService.findByEmail(data.email);
+        console.log(account)
         if (account && await compare(data.password, account.password)) {
             const { accessToken, refreshToken } = await this.generateTokens(account.id, account.email);
             await this.updateRefreshToken({accountId: account.id, refreshToken: refreshToken});
 
             const permission = await this._permissionSerivce.getPermissionsOfUser(account.id);
             await this.redis.set('permission:'+account.id,JSON.stringify(permission));
-            await this.redis.expire(account.id,86400)
+            await this.redis.expire(account.id,this._configService.get('CACHETTL'))
             // await this.redis.del('permission:'+account.id)
-            return { accessToken, refreshToken };
+            const expiredAt = this._configService.get('JWT_EXPIRE_IN');
+            console.log(permission)
+            const p = permission.map(e=>{
+                return (`${e.module}:${e.action}`)
+            })
+            return { accessToken, refreshToken,expiredAt, permission: p};
         }
         throw new UnauthorizedException('Invalid email or password');
     }
@@ -66,8 +72,23 @@ export class AuthService{
         await this._accountService.haftUpdate(data.accountId, { refreshToken: data.refreshToken });
     }
 
-    async refreshToken(refreshToken: string) : Promise<JwtResponse> {
-        return this._accountService.refreshToken(refreshToken);
+    async refreshToken(refreshToken: string) : Promise<ITokenResponse> {
+        const exPayload = ( async () => {
+            try {
+                return await this._jwtService.verifyAsync(refreshToken, {
+                    secret: this._configService.get('REFRESH_TOKEN_SECRET'),
+                });
+            } catch (error) {
+                throw new ForbiddenException('token is invalid!');
+            }
+        })()
+        const account = await this._accountService.findById((await exPayload).sub);
+        if (account && account.refreshToken === refreshToken) {
+            const payload : JwtPayload = { sub: account.id , email: account.email};
+            const token = await this._jwtService.sign(payload);
+            const expiredAt = this._configService.get('JWT_EXPIRE_IN');
+            return { accessToken : token,expiredAt};
+        } 
     }
 
     async generateTokens(id: string, email: string): Promise<ITokenResponse> {

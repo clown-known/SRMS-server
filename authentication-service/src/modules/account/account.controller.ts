@@ -1,8 +1,6 @@
-import { Body, Controller, Get, Param, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { AccountService } from './account.service';
-import { Account } from '../../entity/account';
 import { CreateAccountRequest } from './dto/request/create-account.dto';
-import { LoginRequest } from './dto/request/login-request.dto';
 import { JWTAuthGuard } from '../../guards/jwt-auth/jwt-auth.guard';
 import { PermissionsGuard } from '../../guards/permission.guard';
 import { Permissions } from '../../decorator/permission.decorator';
@@ -18,41 +16,29 @@ export class AuthenticationController {
   constructor(private readonly accountService: AccountService) {}
 
   @Post()
-  createUser(@Body() req: CreateAccountRequest) : Promise<Account>{
-    console.log(req)  
+  createUser(@Body() req: CreateAccountRequest) : Promise<AccountDTO>{
     return this.accountService.createAccount(req);
   }
 
-  @UseGuards(JWTAuthGuard)
-  @Get('test')
-  me(@Req() req){
-    return req.user;
-  }
-
-  @Post('findByEmail')
-  @UseGuards(PermissionsGuard)
-  @Permissions([
-    {module: Modules.ACCOUNT, action: Actions.CREATE},
-    {module: Modules.ACCOUNT, action: Actions.GET}
-  ]
-  )
-  findByEmail(@Body() req: LoginRequest){
-    return this.accountService.findByEmail(req.email);
-  }
   @Get(':id')
   findById(@Param('id') id: string){
-    console.log(id) 
     return this.accountService.findById(id);
   } 
   
   @Put(':id/changePassword')
-  changePassword(@Param('id') id: string,@Body() req: ChangePasswordRequest){
-    return this.accountService.changePassword(id,req);
+  @UseGuards(JWTAuthGuard)
+  changePassword(@Req() req, @Param('id') id: string,@Body() data: ChangePasswordRequest){
+    if(req.user.id != id) throw new UnauthorizedException('Token is not valid for this user!');
+    return this.accountService.changePassword(id,data);
   }
 
   @Get()
+  @UseGuards(PermissionsGuard)
+  @Permissions([
+    {module: Modules.ACCOUNT, action: Actions.GET_ALL},
+    {module: Modules.ACCOUNT, action: Actions.GET}
+  ])
   getAllAccount( @Query() pageOptionsDto: PageOptionsDto,):Promise<PageDto<AccountDTO>>{
-    console.log(pageOptionsDto)
     return this.accountService.getAllAccounts(pageOptionsDto);
   }
 }

@@ -1,5 +1,6 @@
 import { InjectRedis } from "@nestjs-modules/ioredis";
 import { CanActivate, ExecutionContext, ForbiddenException, Inject, Injectable } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { Reflector } from "@nestjs/core";
 import { JwtService } from "@nestjs/jwt";
 import { Redis } from "ioredis";
@@ -7,7 +8,7 @@ import { PERMISSIONS_KEY, PermissionsDecorator } from "src/decorator/permission.
 import { AccountRepository } from "src/modules/account/account.repository";
 import { AuthService } from "src/modules/auth/auth.service";
 import { PermissionService } from "src/modules/permission/permission.service";
-
+require('dotenv').config();
 @Injectable()
 export class PermissionsGuard implements CanActivate {
     constructor(
@@ -38,6 +39,7 @@ export class PermissionsGuard implements CanActivate {
             throw new ForbiddenException('token is invalid!');
         }
     })()
+    if(decodedToken.sub == process.env.ADMIN_ID) return true;
     // const decodedToken =this.jwtService.verify(token);
     // console.log(decodedToken.sub)
     // const user = await this.accountRepository.findOne(decodedToken.sub);

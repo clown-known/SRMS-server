@@ -5,6 +5,7 @@ export class UpdateRoleDTO{
     //@IsNotEmpty()
     name: string;
 
+    permissionIds: string[]
     //@IsNotEmptyObject()
-    permissions: PermissionInRoleDTO[]
+    permissions?: PermissionInRoleDTO[]
 }

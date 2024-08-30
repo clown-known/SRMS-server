@@ -8,6 +8,7 @@ import { Account } from "src/entity/account";
 import { CreatePermissionRequestDto } from "./dto";
 import { PermissionDTO } from "./dto/permission.dto";
 import { PageOptionsDto } from "src/common/pagination/page-options.dto";
+import { transformToDTO } from "src/common/transform.util";
 
 @Injectable({scope: Scope.REQUEST})
 export class PermissionRepository extends BaseRepository {
@@ -15,7 +16,7 @@ export class PermissionRepository extends BaseRepository {
         super(dataSource, req);
     }
 
-    async getPermissionsOfUser(id: string): Promise<Permission[]> {
+    async getPermissionsOfUser(id: string): Promise<PermissionDTO[]> {
         const user = await this.getRepository(Account).findOne({
             where: { id },
             relations: ['role', 'role.rolePermissions', 'role.rolePermissions.permission']
@@ -26,9 +27,9 @@ export class PermissionRepository extends BaseRepository {
         if (!user.role) {
             return []
         }
-        return user.role.rolePermissions.map(rp => rp.permission);
+        const result = user.role.rolePermissions.map(rp => rp.permission);
+        return transformToDTO(PermissionDTO,result)
     }
-    
     async softDelete(id: string){
         return this.getRepository(Permission).softDelete(id);
     }
@@ -41,25 +42,29 @@ export class PermissionRepository extends BaseRepository {
     }
 
     async findOne(id: string){
-        return this.getRepository(Permission).findOne({ where: { id } });
+        const value = await this.getRepository(Permission).findOne({ where: { id } });
+        return transformToDTO(PermissionDTO,value);
     }
 
     async find(ids?: string[]): Promise<PermissionDTO[]> {
         if (ids && ids.length > 0) {
-            return this.getRepository(Permission).findBy({
+            const result = await this.getRepository(Permission).findBy({
                 id: In(ids)
             });
+            return transformToDTO(PermissionDTO,result);
         }
-        return this.getRepository(Permission).find();
+        const result = await this.getRepository(Permission).find();
+        return transformToDTO(PermissionDTO,result)
     }
     async findWithOptions(pageOptionsDto?: PageOptionsDto,): Promise<PermissionDTO[]>{
-        return this.getRepository(Permission).find({
+        const value = await this.getRepository(Permission).find({
             skip : pageOptionsDto.skip,
             take : pageOptionsDto.take,
             where:{
                 module : Like('%'+pageOptionsDto.searchKey+'%')
             }
         })
+        return transformToDTO(PermissionDTO,value)
     }
 }
 

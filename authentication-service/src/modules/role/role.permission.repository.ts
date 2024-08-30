@@ -14,18 +14,13 @@ export class RolePermissionRepository extends BaseRepository {
     ) {
         super(dataSource, req);
     }
-    async test(){
-        const role = await this.getRepository(Roles).findOne({where: {id:'daec956a-84a7-41e9-9213-ecea1380b9da'}});
-        const permission = await this.getRepository(Permission).findOne({where: {id:'f69c21d1-9ace-4836-afe1-8cb88b1d81ee'}});
-        await this.getRepository(RolePermissions).save({permission: permission,role: role})
-    }
     async deletePermissionOfRole(roleId:string,permissionId :string) {
-        const result = await this.getRepository(RolePermissions).delete({ role: { id: roleId }, permission: { id: permissionId } });
-        if (result.affected === 0) {
-            console.log('No permission found to delete.');
-        }
+        return await this.getRepository(RolePermissions).delete({ role: { id: roleId }, permission: { id: permissionId } });
     }
-    async updatePermissionToRole(role: Roles, permissions: Permission[]){
+    async deletePermissionOfRoleByRoleId(roleId:string) {
+        return await this.getRepository(RolePermissions).delete({ role: { id: roleId }});
+    }
+    async updatePermissionToRole(role: Roles, permissions: PermissionDTO[]){
         await this.getRepository(RolePermissions).delete({ role: role });
 
         // Prepare new permission items
@@ -35,10 +30,8 @@ export class RolePermissionRepository extends BaseRepository {
                 permission: e,
             } as RolePermissions;
         });
-
         // Insert new permissions
         await this.getRepository(RolePermissions).insert(items);
-        
         // Return the updated role object
         return this.getRepository(Roles).findOne({
             where: { id: role.id },

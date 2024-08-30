@@ -5,29 +5,73 @@ import { UpdateRouteDTO } from "./dto/request/update-route.dto";
 import { CreateRouteDTO } from "./dto/request/create-route.dto";
 import { RouteDTO } from "./dto/route.dto";
 import { RouteRepository } from "./route.repository";
-import { Route } from "src/entity";
+import { Point, Route } from "src/entity";
 import { validate } from "class-validator";
+import { PageOptionsDto } from "src/common/pagination/page-option.dto";
+import { PageMetaDto } from "src/common/pagination/page-meta.dto";
+import { Like } from "typeorm";
+import { PointRepository } from "../point/point.repository";
 
 
 @Injectable()
 export class RouteService {
   constructor(
-    @InjectRepository(Route)
-    private readonly routeRepository: RouteRepository
-  ) {}
+    @InjectRepository(RouteRepository)
+    private readonly routeRepository: RouteRepository,
+    @InjectRepository(PointRepository)
+    private readonly pointRepository: PointRepository,
+) {}
 
-  async save(createRouteDTO: CreateRouteDTO): Promise<CreateRouteDTO> {
-    const savedRoute = await this.routeRepository.save(createRouteDTO);
-    return plainToInstance(CreateRouteDTO, savedRoute);
+async save(createRouteDTO: CreateRouteDTO): Promise<CreateRouteDTO> {
+  const startPoint = await this.pointRepository.findOne({ where: { id: createRouteDTO.startPointId } });
+  const endPoint = await this.pointRepository.findOne({ where: { id: createRouteDTO.endPointId } });
+  if (!startPoint) {
+    throw new BadRequestException('Invalid startPoint ID');
   }
-
-  async findAll(): Promise<RouteDTO[]> {
-    const routes = await this.routeRepository.find();
-    return plainToInstance(RouteDTO, routes);
+  if (!endPoint) {
+    throw new BadRequestException('Invalid endPoint ID');
   }
+  const route = new Route();
+  route.name = createRouteDTO.name;
+  route.description = createRouteDTO.description;
+  route.startPoint = startPoint;
+  route.endPoint = endPoint;
 
+  const savedRoute = await this.routeRepository.save(route);
+  return plainToInstance(CreateRouteDTO, savedRoute);
+}
+
+
+async findAll(pageOptionsDto: PageOptionsDto): Promise<{ data: RouteDTO[]; meta: PageMetaDto }> {
+  const [routes, itemCount] = await this.routeRepository.findAndCount({
+    relations: ['startPoint', 'endPoint'],
+    where: [
+      { name: Like(`%${pageOptionsDto.searchKey}%`) },
+      { description: Like(`%${pageOptionsDto.searchKey}%`) },
+    ],
+    take: pageOptionsDto.take,
+    skip: pageOptionsDto.skip,
+    order: {
+      [pageOptionsDto.orderBy || 'name']: pageOptionsDto.order,
+    },
+  });
+
+  const pageMetaDto = new PageMetaDto({
+    pageOptionsDto,
+    itemCount,
+  });
+
+  return {
+    data: plainToInstance(RouteDTO, routes),
+    meta: pageMetaDto,
+  };
+}
+  
   async findOne(id: string): Promise<RouteDTO> { 
-    const route = await this.routeRepository.findOne({ where: { id } });
+    const route = await this.routeRepository.findOne({ 
+      where: { id },
+      relations: ['startPoint', 'endPoint' ],
+     });
     if (!route) {
       throw new NotFoundException('Route not found');
     }

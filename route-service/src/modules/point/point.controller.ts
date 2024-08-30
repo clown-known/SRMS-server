@@ -1,8 +1,11 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from "@nestjs/common";
 import { PointService } from "./point.service";
 import { plainToInstance } from "class-transformer";
 import { CreatePointDTO } from "./dto/request/create-point.dto";
 import { UpdatePointDTO } from "./dto/request/update-point.dto";
+import { PageOptionsDto } from "src/common/pagination/page-option.dto";
+import { PageDto } from "src/common/pagination/page.dto";
+import { PointDTO } from "./dto/point.dto";
 
 
 @Controller('points')
@@ -15,9 +18,8 @@ export class PointController {
     }
 
     @Get()
-    async findAll(): Promise<CreatePointDTO[]> {
-        const points = await this.pointService.findAll();
-        return points.map(point => plainToInstance(CreatePointDTO, point));
+    async findAll(@Query() pageOptionsDto: PageOptionsDto): Promise<PageDto<PointDTO>> {
+        return this.pointService.findAll(pageOptionsDto);
     }
 
     @Get(':id')

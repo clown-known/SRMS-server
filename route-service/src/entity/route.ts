@@ -12,11 +12,11 @@ export class Route extends BaseEntity {
     @Column()
     description: string;
 
-    @ManyToOne(() => Point, (point) => point.id, { nullable: false })
+    @ManyToOne(() => Point, { nullable: false })
     @JoinColumn({ name: 'start_point_id' })
     startPoint: Point;
 
-    @ManyToOne(() => Point, (point) => point.id, { nullable: false })
+    @ManyToOne(() => Point, { nullable: false })
     @JoinColumn({ name: 'end_point_id' })
     endPoint: Point;
 }

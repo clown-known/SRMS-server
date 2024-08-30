@@ -36,7 +36,8 @@ services:
     restart: unless-stopped
 
 
-# Kafka
+
+# Kafka and zookeeper
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.0.1

@@ -4,6 +4,8 @@ import { Route } from "../../entity/route";
 import { CreateRouteDTO } from "./dto/request/create-route.dto";
 import { UpdateRouteDTO } from "./dto/request/update-route.dto";
 import { RouteDTO } from "./dto/route.dto";
+import { PageOptionsDto } from "src/common/pagination/page-option.dto";
+import { PageDto } from "src/common/pagination/page.dto";
 
 @Controller('routes')
 export class RouteController {
@@ -15,9 +17,8 @@ export class RouteController {
     }
 
     @Get()
-    async findAll(): Promise<RouteDTO[]> {
-        const routes = await this.routeService.findAll();
-        return routes.map(route => new RouteDTO());
+    async findAll(@Query() pageOptionsDto: PageOptionsDto): Promise<PageDto<RouteDTO>> {
+        return this.routeService.findAll(pageOptionsDto);
     }
 
     @Get(':id')

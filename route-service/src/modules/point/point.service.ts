@@ -2,10 +2,12 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { plainToInstance } from "class-transformer";
 import { Point } from "../../entity";
-import { Repository } from "typeorm";
+import { Like, Repository } from "typeorm";
 import { CreatePointDTO } from "./dto/request/create-point.dto";
 import { PointDTO } from "./dto/point.dto";
 import { UpdatePointDTO } from "./dto/request/update-point.dto";
+import { PageOptionsDto } from "src/common/pagination/page-option.dto";
+import { PageMetaDto } from "src/common/pagination/page-meta.dto";
 
 
 @Injectable()
@@ -20,9 +22,27 @@ export class PointService {
         return plainToInstance(CreatePointDTO, savedPoint);
     }
 
-    async findAll(): Promise<PointDTO[]> { 
-        const points = await this.pointRepository.find();
-        return plainToInstance(PointDTO, points);
+    async findAll(pageOptionsDto: PageOptionsDto): Promise<{ data: PointDTO[]; meta: PageMetaDto }> { 
+        const [points, itemCount] = await this.pointRepository.findAndCount({
+            where: {
+                name: Like(`%${pageOptionsDto.searchKey}%`),
+            },
+            take: pageOptionsDto.take,
+            skip: pageOptionsDto.skip,
+            order: {
+                [pageOptionsDto.orderBy || 'name']: pageOptionsDto.order,
+            },
+        });
+
+        const pageMetaDto = new PageMetaDto({
+            pageOptionsDto,
+            itemCount,
+        });
+
+        return {
+            data: plainToInstance(PointDTO, points),
+            meta: pageMetaDto,
+        };
     }
 
     async findOne(id: string): Promise<PointDTO> {

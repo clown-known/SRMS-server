@@ -27,7 +27,10 @@ import { RolePermissionSubscriber } from './subcriber/role-permission.subscriber
     RedisModule.forRootAsync({
       useFactory: () => ({
         type: 'single',
-        url: 'redis://localhost:6379',
+        options:{
+          host: 'redis-master',
+          port: 6379
+        }
       }),
     }),
     ConfigModule.forRoot({

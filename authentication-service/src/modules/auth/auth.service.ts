@@ -50,7 +50,6 @@ export class AuthService{
             await this.redis.expire(account.id,this._configService.get('CACHETTL'))
             // await this.redis.del('permission:'+account.id)
             const expiredAt = this._configService.get('JWT_EXPIRE_IN');
-            console.log(permission)
             const p = permission.map(e=>{
                 return (`${e.module}:${e.action}`)
             })

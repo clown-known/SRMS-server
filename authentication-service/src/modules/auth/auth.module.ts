@@ -11,18 +11,24 @@ import { AccountModule } from "../account/account.module";
 import { ProfileModule } from "../profile/profile.module";
 import { PermissionModule } from "../permission/permission.module";
 import { AuthRepository } from "./auth.repository";
+import { TypeOrmModule } from "@nestjs/typeorm";
+import { AuthenticationCode } from "src/entity/authentication_code";
+import resetTokenConfig from "src/config/reset-token.config";
+import { JwtResetPasswordStrategy } from "src/stragery/jwt.reset.password.strategy";
 
 @Global()
 @Module({
   imports: [ 
     PassportModule,
     JwtModule.registerAsync(jwtConfig.asProvider()),
+    TypeOrmModule.forFeature([AuthenticationCode]),
     ConfigModule.forFeature(jwtConfig),
     ConfigModule.forFeature(refreshTokenConfig),
+    ConfigModule.forFeature(resetTokenConfig),
     AccountModule,ProfileModule,PermissionModule
   ],
-  providers: [JwtStrategy, RefreshTokenStrategy, ConfigService,AuthService,AuthRepository],
+  providers: [JwtStrategy, RefreshTokenStrategy, JwtResetPasswordStrategy, ConfigService,AuthService,AuthRepository,],
   controllers:[AuthenticationController],
-  exports: [JwtModule, JwtStrategy, RefreshTokenStrategy,AuthService],
+  exports: [JwtModule, JwtStrategy, RefreshTokenStrategy,AuthService,JwtResetPasswordStrategy],
 })
 export class AuthModule {}

@@ -1,14 +1,41 @@
-import { Inject, Injectable, Scope } from "@nestjs/common";
+import { ForbiddenException, Inject, Injectable, Scope } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { REQUEST } from "@nestjs/core";
 import { Request } from "express";
 import { BaseRepository } from "src/common/base-repository";
 import { Account, Permission } from "src/entity";
+import { AuthenticationCode } from "src/entity/authentication_code";
 import { DataSource } from "typeorm";
+import { AccountDTO } from "../account/dto/account.dto";
+import { ConfirmAuthencodeRequest } from "./dto/request/confirm-authencode-request.dto";
 
 @Injectable({scope: Scope.REQUEST})
 export class AuthRepository extends BaseRepository {
-    constructor(dataSource: DataSource, @Inject(REQUEST) req: Request) {
+    constructor(
+        dataSource: DataSource, 
+        @Inject(REQUEST) req: Request,
+        config: ConfigService
+        ) {
         super(dataSource, req);
+    }
+    async createAuthenCode(accountId: string){
+        const code = this.genCode();
+        const entity = {
+            code: code,
+            accountId: accountId,
+        } 
+        return await this.getRepository(AuthenticationCode).save(entity);
+    }
+    async confirmAuthenCode(code: string, accountId: string): Promise<boolean>{
+        const entity = await this.getRepository(AuthenticationCode).findOne({
+            where : {code: code, isUsed: false, accountId: accountId}
+        });
+        if(!entity) throw new ForbiddenException(' Code is not valid!');
+        await this.getRepository(AuthenticationCode).update(entity.id,{isUsed:true});
+        return true;
+    }
+    private genCode() : string{
+        return (Math.random() + 1).toString(36).substring(7);
     }
     // async getAllUsersWithPermission(permissionId: string): Promise<Account[]> {
     //     return this.getRepository(Account).query(

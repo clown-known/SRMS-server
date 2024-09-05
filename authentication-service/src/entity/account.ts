@@ -1,7 +1,8 @@
 import { BaseEntity } from "src/common/base.entity";
-import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Profile } from "./profile";
 import { Roles } from "./role";
+import { AuthenticationCode } from "./authentication_code";
 @Entity()
 export class Account extends BaseEntity{
 
@@ -38,4 +39,4 @@ export class Account extends BaseEntity{
     @OneToOne(() => Profile, profile => profile.account)
     @JoinColumn()
     profile: Profile;
-}
+} 

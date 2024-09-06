@@ -17,12 +17,14 @@ export class Profile {
 
     @Column()
     address: string;
- 
+
     @Column()
     dateOfBirth: Date;
 
-    @Column()
-    accountId: string;
+    @Column({
+        nullable:true
+    })
+    accountId?: string;
 
     @OneToOne(() => Account, account => account.profile)
     account: Account;

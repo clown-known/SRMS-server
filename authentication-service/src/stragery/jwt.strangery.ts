@@ -4,13 +4,12 @@ import { ExtractJwt, Strategy } from "passport-jwt";
 import { ConfigService, ConfigType } from '@nestjs/config';
 import { JwtPayload } from "src/inteface/jwt.payload";
 import { Inject, Injectable } from "@nestjs/common";
-import { jwtConfig } from "src/service/config";
+import { jwtConfig } from "src/config";
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(
     private readonly _jwtService: JwtService,
-    //private configService: ConfigService,
     @Inject(jwtConfig.KEY)
     private readonly jwtConfiguration: ConfigType<typeof jwtConfig>
   ) {
@@ -19,6 +18,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       secretOrKey:jwtConfiguration.secret,
       ignoreExpiration: false,
     });
+    console.log(1);
   }
 
   async validate(payload: JwtPayload){

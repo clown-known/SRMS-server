@@ -23,6 +23,7 @@ import resetTokenConfig from './config/reset-token.config';
   imports: [
     RedisModule.forRootAsync(redisOptions),
     ConfigModule.forRoot({
+      isGlobal: true,
       expandVariables: true
     }),
     TypeOrmModule.forRoot(postgresOptions),

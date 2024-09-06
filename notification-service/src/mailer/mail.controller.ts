@@ -8,7 +8,7 @@ export class MailController {
 
     @Post('send')
     async sendMail(@Body() sendMailDto: SendMailDTO) {
-        console.log('Received request to send mail with data:', sendMailDto);
+        console.log('Received request to send mail:', sendMailDto);
         try {
             await this.mailService.sendMail(sendMailDto);
             console.log('Email sent successfully');

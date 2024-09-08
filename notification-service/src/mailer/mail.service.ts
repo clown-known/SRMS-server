@@ -37,9 +37,12 @@ export class MailService {
         return html;
     }
 
+    
+
     async sendMail(sendMailDto: SendMailDTO): Promise<void> {
-        try {
-            const htmlContent = this.loadHtmlTemplate('confirmation', sendMailDto.context || {});
+        try { 
+
+            const htmlContent = this.loadHtmlTemplate('', sendMailDto.context || {});
 
             const mailOptions: nodemailer.SendMailOptions = {
                 from: this.configService.get<string>('MAIL_FROM'),

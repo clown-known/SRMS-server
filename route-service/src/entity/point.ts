@@ -14,3 +14,4 @@ export class Point extends BaseEntity {
     @Column('float')
     longitude: number;
 }
+    

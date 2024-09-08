@@ -18,11 +18,15 @@ import { Redis } from "ioredis";
 import { InjectRedis } from "@nestjs-modules/ioredis";
 import { PermissionService } from "../permission/permission.service";
 import { AuthRepository } from "./auth.repository";
+import { ConfirmAuthencodeRequest } from "./dto/request/confirm-authencode-request.dto";
+import { access } from "fs";
+import resetTokenConfig from "src/config/reset-token.config";
 
 @Injectable()
 export class AuthService{
     constructor(
         @Inject(refreshTokenConfig.KEY) private readonly refeshTokenConfig: ConfigType<typeof refreshTokenConfig>,
+        @Inject(resetTokenConfig.KEY) private readonly resetPasswordTokenConfig: ConfigType<typeof resetTokenConfig>,
         private readonly _jwtService: JwtService,
         private readonly _configService: ConfigService,
         private readonly _accountService: AccountService,
@@ -71,6 +75,27 @@ export class AuthService{
         await this._accountService.haftUpdate(data.accountId, { refreshToken: data.refreshToken });
     }
 
+    async createAuthenCode(email: string){
+        const account = await this._accountService.findByEmail(email)
+        const entity = await this._authRepository.createAuthenCode(account.id)
+        
+    }
+    async confirmAuthencode(data: ConfirmAuthencodeRequest) {
+        const account = await this._accountService.findByEmail(data.email)
+        if(!account) throw new BadRequestException(' email is not found!');
+        if(await this._authRepository.confirmAuthenCode(data.code,account.id)){
+            const payload : JwtPayload = { sub: account.id , email: data.email, isResetPass: true};
+            const token = await this._jwtService.sign(payload,this.resetPasswordTokenConfig);
+            return { accessToken :token};
+        }else{
+            throw new UnauthorizedException(' code is not valid! ');
+        }
+    }
+    async resetPassword(accountId: string, newPassword: string){
+        const hashedPassword = await hash(newPassword)
+        await this._accountService.haftUpdate(accountId,{password:hashedPassword})
+        return true;
+    }
     async refreshToken(refreshToken: string) : Promise<ITokenResponse> {
         const exPayload = ( async () => {
             try {

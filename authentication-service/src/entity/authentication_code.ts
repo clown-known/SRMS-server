@@ -10,12 +10,14 @@ export class AuthenticationCode{
     @Column()
     code: string;
 
+    @Column({
+        default: false
+    })
+    isUsed: boolean;
+
     @Column()
     accountId: string;
     
-    @Column()
-    isUsed: boolean;
-
     @ManyToOne(() => Account, account => account)
-    accounts: Account;
+    account: Account;
 }

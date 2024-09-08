@@ -37,9 +37,8 @@ export class AccountRepository extends BaseRepository{
         const value = await this.getRepository(Account).findOne({ relations: ['profile'] ,where: { email } });
         return plainToInstance(AccountDTO,value);
     }
-    async findOne(id : string) : Promise<AccountDTO | null>{
-        const value = await this.getRepository(Account).findOne({ where: { id } });
-        return transformToDTO(AccountDTO,value);
+    async findOne(id : string) : Promise<Account | null>{
+        return await this.getRepository(Account).findOne({ where: { id } });
     }
     async update(id: string,data : DeepPartial<Account>): Promise<AccountDTO | null>{
         if(!this.findOne(id)) throw new BadRequestException(' object not found!');

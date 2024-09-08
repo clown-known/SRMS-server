@@ -1,17 +1,10 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Account } from './entity/account';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { postgresOptions } from './config/data-source';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { JwtStrategy } from './stragery/jwt.strangery';
-import { RefreshTokenStrategy } from './stragery/refreshToken.strategy';
-import {jwtConfig,refreshTokenConfig} from './config/index';
-import { RolePermissions } from './entity/role.permissions';
-import { Permission } from './entity/permission';
-import { Roles } from './entity/role';
-import { Profile } from './entity/profile';
+import { jwtConfig,refreshTokenConfig } from './config/index';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ResponseInterceptor } from './common/response.interceptor';
 import { AccountModule } from './modules/account/account.module';
@@ -20,19 +13,15 @@ import { PermissionModule } from './modules/permission/permission.module';
 import { RoleModule } from './modules/role/role.module';
 import { ProfileModule } from './modules/profile/profile.module';
 import { RedisModule } from '@nestjs-modules/ioredis';
-import { RolePermissionSubscriber } from './subcriber/role-permission.subscriber';
+import { redisOptions } from './config/redis-options';
+import { JwtStrategy } from './stragery/jwt.strangery';
+import { RefreshTokenStrategy } from './stragery/refreshToken.strategy';
+import { JwtResetPasswordStrategy } from './stragery/jwt.reset.password.strategy';
+import resetTokenConfig from './config/reset-token.config';
 
 @Module({
   imports: [
-    RedisModule.forRootAsync({
-      useFactory: () => ({
-        type: 'single',
-        options:{
-          host: 'redis-master',
-          port: 6379
-        }
-      }),
-    }),
+    RedisModule.forRootAsync(redisOptions),
     ConfigModule.forRoot({
       isGlobal: true,
       expandVariables: true
@@ -43,12 +32,13 @@ import { RolePermissionSubscriber } from './subcriber/role-permission.subscriber
     JwtModule.registerAsync(jwtConfig.asProvider()),
     ConfigModule.forFeature(jwtConfig),
     ConfigModule.forFeature(refreshTokenConfig),
+    ConfigModule.forFeature(resetTokenConfig),
     AccountModule,AuthModule,PermissionModule,RoleModule,ProfileModule
   ],
   controllers: [],
   providers: [
     ConfigService,
-    //JwtStrategy,RefreshTokenStrategy,
+    JwtStrategy,RefreshTokenStrategy,JwtResetPasswordStrategy,
     {
       provide: APP_INTERCEPTOR,
       useClass: ResponseInterceptor,

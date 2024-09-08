@@ -24,7 +24,7 @@ export class AccountService {
   async findByEmail(email: string): Promise<AccountDTO | null> {
     return await this._accountRepository.findByEmail(email);
   }
-  async findById(id: string): Promise<AccountDTO | null> {
+  async findById(id: string): Promise<Account | null> {
     return await this._accountRepository.findOne(id);
   }
   async changePassword(id: string, data: ChangePasswordRequest){

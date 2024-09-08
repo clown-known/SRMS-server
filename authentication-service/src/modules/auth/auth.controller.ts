@@ -5,8 +5,11 @@ import { RegisterRequest } from "./dto/request/register-request.dto";
 import { RefreshAuthGuard } from "src/guards/refresh-auth/refresh-auth.guard";
 import { JWTAuthGuard } from "src/guards/jwt-auth/jwt-auth.guard";
 import { TransactionInterceptor } from "src/common/transaction.interceptor";
-import { InjectRedis } from "@nestjs-modules/ioredis";
-import { Redis } from "ioredis";
+import { ForgotPasswordRequest } from "./dto/request/forgot-password-request.dto";
+import { ConfirmAuthencodeRequest } from "./dto/request/confirm-authencode-request.dto";
+import { JwtResetPasswordStrategy } from "src/stragery/jwt.reset.password.strategy";
+import { ResetPasswordGuard } from "src/guards/reset-password.guard";
+import { ResetPasswordRequest } from "./dto/request/reset-password.request.dto";
 
 @Controller('auth')
 export class AuthenticationController{
@@ -34,5 +37,23 @@ export class AuthenticationController{
     @Get('refresh')
     refresh(@Req() req){
         return this.authenticationService.refreshToken(req.user.refreshToken);
+    }
+
+    @Post('forgot-password')
+    forgotPassword(@Body() data: ForgotPasswordRequest){
+        return this.authenticationService.createAuthenCode(data.email)
+    }
+
+    @Post('confirm-code')
+    confirmAuthenCode(@Body() data : ConfirmAuthencodeRequest){
+        console.log(data)
+        return this.authenticationService.confirmAuthencode(data);
+    }
+
+    @UseGuards(ResetPasswordGuard)
+    @Post('reset-password')
+    resetPassword(@Req() req, @Body() data:  ResetPasswordRequest ){
+        console.log(req.user.id)
+        return this.authenticationService.resetPassword(req.user.id,data.newPassword);
     }
 }

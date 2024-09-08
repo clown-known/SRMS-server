@@ -1,4 +1,5 @@
 import { Account } from 'src/entity/account';
+import { AuthenticationCode } from 'src/entity/authentication_code';
 import { Permission } from 'src/entity/permission';
 import { Profile } from 'src/entity/profile';
 import { Roles } from 'src/entity/role';
@@ -14,7 +15,7 @@ export const postgresOptions: DataSourceOptions = {
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DATABASE,
-      entities: [Account,Roles,Permission,Profile,RolePermissions],
+      entities: [Account,Roles,Permission,Profile,RolePermissions,AuthenticationCode],
       synchronize: true,
       subscribers:[RolePermissionSubscriber]
     

@@ -8,7 +8,7 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { Account } from "src/entity";
 import { PermissionRepository } from "../permission/permission.repository";
 import { PermissionModule } from "../permission/permission.module";
- 
+
 @Module({
     imports: [
         TypeOrmModule.forFeature([Account]),

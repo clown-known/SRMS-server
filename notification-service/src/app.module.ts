@@ -1,14 +1,15 @@
 import { Module } from '@nestjs/common';
-import { MailModule } from './mailer/mail.module';
 import { ConfigModule } from '@nestjs/config';
-import { NotificationModule } from './notification/notification.module';
+import { KafkaModule } from './kafka/kafka.module';
+import { MailModule } from './mailer/mail.module';
 
 @Module({
     imports: [
         ConfigModule.forRoot({
             isGlobal: true,
-        }),  
-        MailModule, NotificationModule
+        }),
+        KafkaModule,
+        MailModule,
     ],
 })
 export class AppModule {}

@@ -21,6 +21,7 @@ import { AuthRepository } from "./auth.repository";
 import { ConfirmAuthencodeRequest } from "./dto/request/confirm-authencode-request.dto";
 import { access } from "fs";
 import resetTokenConfig from "src/config/reset-token.config";
+import { KafkaService } from "../kafka/kafka.service";
 
 @Injectable()
 export class AuthService{
@@ -34,6 +35,7 @@ export class AuthService{
         private readonly _permissionSerivce: PermissionService,
         private readonly _authRepository: AuthRepository,
         @InjectRedis() private readonly redis: Redis,
+        private readonly kafkaService: KafkaService,
         
     ){}
     async getPermissionsOfUser(id: string) {
@@ -68,6 +70,16 @@ export class AuthService{
         const hashedPassword = await hash(data.password);
         const profile = await this._profileService.createProfile(data);
         const account = await this._accountService.haftSave({...data, password: hashedPassword,profileId: profile.id,profile:profile});
+
+        // Kafka
+
+        await this.kafkaService.sendMessage('email-topic', {
+            to: data.email,
+            subject: 'Welcome!',
+            template: 'welcome',
+            context: { name: data.firstName },
+        });
+
         return plainToInstance(RegisterResponse,{...account,profile});
     }
 

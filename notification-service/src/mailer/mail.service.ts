@@ -4,6 +4,7 @@ import { SendMailDTO } from './mail.interface';
 import { ConfigService } from '@nestjs/config';
 import * as path from 'path';
 import * as fs from 'fs';
+import { EmailTemplateSubject } from 'src/common/enum';
 
 @Injectable()
 export class MailService {
@@ -29,7 +30,7 @@ export class MailService {
         const templatePath = path.resolve(`./src/mailer/templates/${templateName}.html`);
         let html = fs.readFileSync(templatePath, 'utf-8');
         
-        for (const [key, value] of Object.entries(context)) {
+        for (const [    key, value] of Object.entries(context)) {
             const placeholder = `{{${key}}}`;
             html = html.replace(new RegExp(placeholder, 'g'), value);
         }
@@ -42,12 +43,14 @@ export class MailService {
     async sendMail(sendMailDto: SendMailDTO): Promise<void> {
         try { 
 
-            const htmlContent = this.loadHtmlTemplate('', sendMailDto.context || {});
+            const templateName = sendMailDto.emailTemplate;
+            const htmlContent = this.loadHtmlTemplate(templateName, sendMailDto.context || {});
+            
 
             const mailOptions: nodemailer.SendMailOptions = {
                 from: this.configService.get<string>('MAIL_FROM'),
                 to: sendMailDto.to,
-                subject: sendMailDto.subject,
+                subject: EmailTemplateSubject[sendMailDto.emailTemplate],
                 html: htmlContent, 
             };
 

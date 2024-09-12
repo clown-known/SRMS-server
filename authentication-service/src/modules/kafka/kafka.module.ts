@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { KafkaService } from './kafka.service';
-import { MailModule } from 'src/mailer/mail.module';
 
 @Module({
   imports: [
@@ -14,14 +13,11 @@ import { MailModule } from 'src/mailer/mail.module';
             brokers: ['localhost:9092'],
           },
           consumer: {
-            groupId: process.env.KAFKA_GROUP_ID || 'notification-consumer',
-            heartbeatInterval: 1000,
-            sessionTimeout: 30000,
+            groupId: 'auth-service-group',
           },
         },
       },
     ]),
-    MailModule,
   ],
   providers: [KafkaService],
   exports: [KafkaService],

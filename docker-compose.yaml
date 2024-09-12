@@ -17,6 +17,23 @@ services:
       - microservice-network
     restart: unless-stopped
 
+  postgres-2:
+    container_name: postgres_container_2
+    image: postgres:${POSTGRES_VERSION}
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-sa}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-123}
+      POSTGRES_DB: ${POSTGRES_ROUTE_DATABASE}
+      PGDATA: /data/postgres
+    volumes:
+      - postgres:/data/postgres_2
+    ports:
+      - ${POSTGRES_ROUTE_PORT}:5432
+    networks:
+      - microservice-network
+    restart: unless-stopped
+
+
   redis-master:
     image: redis:6.0.7
     container_name: redis-master
@@ -46,7 +63,7 @@ services:
       context: ./authentication-service
     container_name: authentication_service 
     ports:
-      - "3001:3000"
+      - "3001:3001"
     env_file:
       - ./authentication-service/.env
     networks:
@@ -147,7 +164,7 @@ services:
     image: nginx:latest
     container_name: nginx_gateway
     ports:
-      - "3002:80"
+      - "3000:80"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
     networks:

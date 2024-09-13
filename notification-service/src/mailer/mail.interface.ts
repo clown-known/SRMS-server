@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsEmail, IsString, IsOptional, IsEnum } from 'class-validator';
+import { IsNotEmpty, IsEmail, IsOptional, IsEnum, IsString } from 'class-validator';
 import { EmailTemplate } from 'src/common/enum';
 
 export class SendMailDTO {
@@ -6,9 +6,9 @@ export class SendMailDTO {
     @IsEmail()
     to: string;
 
-    // @IsNotEmpty()
-    // @IsString()
-    // subject?: string;
+    @IsNotEmpty()
+    @IsString()
+    subject?: string;
 
     // @IsNotEmpty()
     // @IsString()

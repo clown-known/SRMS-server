@@ -71,14 +71,7 @@ export class AuthService{
         const profile = await this._profileService.createProfile(data);
         const account = await this._accountService.haftSave({...data, password: hashedPassword,profileId: profile.id,profile:profile});
 
-        // Kafka
-
-        await this.kafkaService.sendMessage('email-topic', {
-            to: data.email,
-            subject: 'Welcome!',
-            template: 'welcome',
-            context: { name: data.firstName },
-        });
+        await this.kafkaService.sendRegisterEmail(data.email, data.firstName);
 
         return plainToInstance(RegisterResponse,{...account,profile});
     }

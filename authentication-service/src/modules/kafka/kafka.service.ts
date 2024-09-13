@@ -5,11 +5,15 @@ import { ClientKafka } from '@nestjs/microservices';
 export class KafkaService {
   constructor(@Inject('KAFKA_SERVICE') private readonly kafkaClient: ClientKafka) {}
 
-  async sendMessage(topic: string, message: any) {
-    return this.kafkaClient.emit(topic, message);
-  }
 
   async onModuleInit() {
     await this.kafkaClient.connect();
+  }
+
+  async sendRegisterEmail(email: string, username: string){
+    await this.kafkaClient.emit('auth.registration', {
+      email,
+      username,
+    });
   }
 }

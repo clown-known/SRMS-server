@@ -5,9 +5,14 @@ import { RouteController } from './route.controller';
 import { RouteRepository } from './route.repository';
 import { Route } from 'src/entity';
 import { PointModule } from '../point/point.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Route]), PointModule],
+  imports: [
+    TypeOrmModule.forFeature([Route]), 
+    PointModule,
+    AuthModule
+  ],
   controllers: [RouteController],
   providers: [RouteService, RouteRepository],
   exports: [RouteService],

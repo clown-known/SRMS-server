@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put, Query, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Req, UnauthorizedException, UseGuards, UseInterceptors } from '@nestjs/common';
 import { AccountService } from './account.service';
 import { CreateAccountRequest } from './dto/request/create-account.dto';
 import { JWTAuthGuard } from '../../guards/jwt-auth/jwt-auth.guard';
@@ -9,6 +9,7 @@ import { ChangePasswordRequest } from './dto/request/change-password-request.dto
 import { PageOptionsDto } from 'src/common/pagination/page-options.dto';
 import { AccountDTO } from './dto/account.dto';
 import { PageDto } from 'src/common/pagination/page.dto';
+import { TransactionInterceptor } from 'src/common/transaction.interceptor';
 
 @Controller('account')
 
@@ -36,9 +37,14 @@ export class AuthenticationController {
   @UseGuards(PermissionsGuard)
   @Permissions([
     {module: Modules.ACCOUNT, action: Actions.GET_ALL},
-    {module: Modules.ACCOUNT, action: Actions.GET}
   ])
   getAllAccount( @Query() pageOptionsDto: PageOptionsDto,):Promise<PageDto<AccountDTO>>{
     return this.accountService.getAllAccounts(pageOptionsDto);
+  }
+
+  @Delete(':id')
+  @UseInterceptors(TransactionInterceptor)
+  deleteUser(@Param('id') id: string){
+    return this.accountService.softDelete(id);
   }
 }

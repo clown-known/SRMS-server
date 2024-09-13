@@ -38,7 +38,7 @@ export class AccountRepository extends BaseRepository{
         return plainToInstance(AccountDTO,value);
     }
     async findOne(id : string) : Promise<Account | null>{
-        return await this.getRepository(Account).findOne({ where: { id } });
+        return await this.getRepository(Account).findOne({relations: ['profile'] , where: { id } });
     }
     async update(id: string,data : DeepPartial<Account>): Promise<AccountDTO | null>{
         if(!this.findOne(id)) throw new BadRequestException(' object not found!');
@@ -49,5 +49,10 @@ export class AccountRepository extends BaseRepository{
         if(!this.findByEmail(data.email)) throw new BadRequestException(' email is already exist!');
         const saved = await this.getRepository(Account).save(data);
         return transformToDTO(AccountDTO,saved);
+    }
+
+    async delete(id: string){
+        if(!this.findOne(id)) throw new BadRequestException(' object not found!');
+        return this.getRepository(Account).softDelete(id);
     }
 }

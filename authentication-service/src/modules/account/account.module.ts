@@ -8,13 +8,15 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { Account } from "src/entity";
 import { PermissionRepository } from "../permission/permission.repository";
 import { PermissionModule } from "../permission/permission.module";
+import { ProfileModule } from "../profile/profile.module";
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([Account]),
         ConfigModule.forFeature(jwtConfig),
         ConfigModule.forFeature(refreshTokenConfig),
-        PermissionModule
+        PermissionModule,
+        ProfileModule
     ],
     controllers: [AuthenticationController],
     providers: [

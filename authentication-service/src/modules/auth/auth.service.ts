@@ -21,6 +21,7 @@ import { AuthRepository } from "./auth.repository";
 import { ConfirmAuthencodeRequest } from "./dto/request/confirm-authencode-request.dto";
 import { access } from "fs";
 import resetTokenConfig from "src/config/reset-token.config";
+import { LoginResponse } from "./dto/response/login-response.dto";
 
 @Injectable()
 export class AuthService{
@@ -42,9 +43,8 @@ export class AuthService{
     // async getAllUsersWithPermission(permissionId: string) {
     //     return this._authRepository.getAllUsersWithPermission(permissionId);
     // }
-    async login(data: LoginRequest) : Promise<ITokenResponse> {
+    async login(data: LoginRequest) : Promise<LoginResponse> {
         const account = await this._accountService.findByEmail(data.email);
-        console.log(account)
         if (account && await compare(data.password, account.password)) {
             const { accessToken, refreshToken } = await this.generateTokens(account.id, account.email);
             await this.updateRefreshToken({accountId: account.id, refreshToken: refreshToken});
@@ -57,7 +57,10 @@ export class AuthService{
             const p = permission.map(e=>{
                 return (`${e.module}:${e.action}`)
             })
-            return { accessToken, refreshToken,expiredAt, permission: p};
+            return {
+                name: account.profile.fullName,
+                token: { accessToken, refreshToken,expiredAt, permission: p}
+            };
         }
         throw new UnauthorizedException('Invalid email or password');
     }
@@ -68,7 +71,8 @@ export class AuthService{
         const hashedPassword = await hash(data.password);
         const profile = await this._profileService.createProfile(data);
         const account = await this._accountService.haftSave({...data, password: hashedPassword,profileId: profile.id,profile:profile});
-        return plainToInstance(RegisterResponse,{...account,profile});
+        return this.login({email:data.email,password:data.password});
+        // return plainToInstance(RegisterResponse,{...account,profile});
     }
 
     private async updateRefreshToken(data: UpdateRefreshTokenRequest): Promise<void> {

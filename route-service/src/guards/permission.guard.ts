@@ -56,7 +56,7 @@ export class PermissionsGuard implements CanActivate {
     // map permission to partern
     // check permission is in required list or not
     const hasPermission = (permission) => {
-        if(permission==null) return false;
+        if(userPermissions==null) return false;
         const permissionKeys = userPermissions.map(
             (permission) => `${permission.module}:${permission.action}`,
         );

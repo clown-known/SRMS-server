@@ -39,8 +39,8 @@ export class AccountService {
     return this._accountRepository.update(id, { password: hashedPassword });
   }
   async getAllAccounts(pageOptionsDto: PageOptionsDto,) : Promise<PageDto<AccountDTO>>{
-    const items = await this._accountRepository.findWithOption(pageOptionsDto);
-    const pageMetaDto = new PageMetaDto({ itemCount : items.length, pageOptionsDto });
+    const [items,count] = await this._accountRepository.findWithOption(pageOptionsDto);
+    const pageMetaDto = new PageMetaDto({ itemCount : count, pageOptionsDto });
     return new PageDto(items, pageMetaDto);
   }
 

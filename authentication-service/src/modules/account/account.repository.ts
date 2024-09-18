@@ -8,6 +8,7 @@ import { DataSource, DeepPartial, FindOptionsOrder, FindOptionsWhere, Like} from
 import { AccountDTO } from "./dto/account.dto";
 import { transformToDTO } from "src/common/transform.util";
 import { plainToInstance } from "class-transformer";
+import { Profile } from "src/entity";
 @Injectable({scope: Scope.REQUEST})
 export class AccountRepository extends BaseRepository{
     constructor(dataSource: DataSource, @Inject(REQUEST) req: Request) {
@@ -18,7 +19,7 @@ export class AccountRepository extends BaseRepository{
             relations: ['profile'],
         });
     }
-    async findWithOption(pageOptionsDto: PageOptionsDto,) : Promise<AccountDTO[]>{
+    async findWithOption(pageOptionsDto: PageOptionsDto,) : Promise<[AccountDTO[],itemCount: number]>{
         const order: FindOptionsOrder<Account> = {
             ...(pageOptionsDto.orderBy? { [pageOptionsDto.orderBy]: pageOptionsDto.order } : {}),
         }       
@@ -31,14 +32,21 @@ export class AccountRepository extends BaseRepository{
                 email : Like('%'+pageOptionsDto.searchKey+'%')
             }
         });
-        return transformToDTO(AccountDTO,value);
+        const queryBuilder = this.getRepository(Account).createQueryBuilder("account")
+        queryBuilder
+            .orderBy(pageOptionsDto.orderBy? { [pageOptionsDto.orderBy]: pageOptionsDto.order } : {})
+            .skip(pageOptionsDto.skip)
+            .take(pageOptionsDto.take);
+
+        const itemCount = await queryBuilder.getCount();
+        return [transformToDTO(AccountDTO,value),itemCount];
     }
     async findByEmail(email: string): Promise<AccountDTO | null> {
         const value = await this.getRepository(Account).findOne({ relations: ['profile'] ,where: { email } });
         return plainToInstance(AccountDTO,value);
     }
     async findOne(id : string) : Promise<Account | null>{
-        return await this.getRepository(Account).findOne({ where: { id } });
+        return await this.getRepository(Account).findOne({relations: ['profile'] , where: { id } });
     }
     async update(id: string,data : DeepPartial<Account>): Promise<AccountDTO | null>{
         if(!this.findOne(id)) throw new BadRequestException(' object not found!');
@@ -49,5 +57,10 @@ export class AccountRepository extends BaseRepository{
         if(!this.findByEmail(data.email)) throw new BadRequestException(' email is already exist!');
         const saved = await this.getRepository(Account).save(data);
         return transformToDTO(AccountDTO,saved);
+    }
+
+    async delete(id: string){
+        if(!this.findOne(id)) throw new BadRequestException(' object not found!');
+        return this.getRepository(Account).softDelete(id);
     }
 }

@@ -14,7 +14,7 @@ export class PermissionController {
 
     @Get()
     getAllPermission(@Query() pageOptionsDto: PageOptionsDto,): Promise<PageDto<PermissionDTO>>{
-        return this.permissionService.getAllPermission(pageOptionsDto);
+        return this.permissionService.getAllPermission(pageOptionsDto); 
     }
 
     @Get(':id')

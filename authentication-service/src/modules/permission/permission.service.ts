@@ -18,8 +18,8 @@ export class PermissionService {
     return await this.permissionRepository.find(ids);
   }
   async getAllPermission(pageOptionsDto?: PageOptionsDto,): Promise<PageDto<PermissionDTO>>{
-    const items = await this.permissionRepository.findWithOptions(pageOptionsDto);
-    const pageMetaDto = new PageMetaDto({ itemCount: items.length, pageOptionsDto });
+    const [items,count] = await this.permissionRepository.findWithOptions(pageOptionsDto);
+    const pageMetaDto = new PageMetaDto({ itemCount: count, pageOptionsDto });
     return new PageDto(items, pageMetaDto);
   }
   getPermissionById(id: string) {

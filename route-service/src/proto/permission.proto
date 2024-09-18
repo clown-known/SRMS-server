@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package permission;
+
+service PermissionService {
+  rpc GetPermission (UserId) returns (PermissionResponse);
+}
+
+message UserId {
+  string userId = 1;
+}
+
+message PermissionResponse {
+  repeated string data = 1;
+}

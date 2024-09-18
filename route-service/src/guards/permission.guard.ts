@@ -1,20 +1,17 @@
 import { InjectRedis } from "@nestjs-modules/ioredis";
 import { CanActivate, ExecutionContext, ForbiddenException, Inject, Injectable } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
 import { Reflector } from "@nestjs/core";
 import { JwtService } from "@nestjs/jwt";
 import { Redis } from "ioredis";
 import { PERMISSIONS_KEY, PermissionsDecorator } from "src/decorator/permission.decorator";
-import { AccountRepository } from "src/modules/account/account.repository";
-import { AuthService } from "src/modules/auth/auth.service";
-import { PermissionService } from "src/modules/permission/permission.service";
+import { AuthGrpcService } from "src/modules/auth/auth.grpc.service";
 require('dotenv').config();
 @Injectable()
 export class PermissionsGuard implements CanActivate {
     constructor(
         private readonly reflector: Reflector,
         private readonly jwtService: JwtService,
-        private readonly authService: AuthService,
+        private readonly authService: AuthGrpcService,
         @InjectRedis() private readonly redis: Redis,
     ) {}
 
@@ -34,22 +31,16 @@ export class PermissionsGuard implements CanActivate {
     // verify token is expired or invalid
     const decodedToken = (() => {
         try {
-            return this.jwtService.verify(token);
+            return this.jwtService.verify(token); 
         } catch (error) {
             throw new ForbiddenException('token is invalid!');
         }
     })()
-    if(decodedToken.sub == process.env.ADMIN_ID) return true;
-    // const decodedToken =this.jwtService.verify(token);
-    // console.log(decodedToken.sub)
-    // const user = await this.accountRepository.findOne(decodedToken.sub);
-    // console.log(user)
-    // if (!user ) {
-    //     throw new ForbiddenException('Invalid user or role');
-    // }
+    if(decodedToken.sub == process.env.ADMIN_ID) return true; 
+
     // get permission from cache if not exist check in database, and set it to cache for another request
     const getUserPermissionFromDBAndPutToCache = async () =>{
-        const permissions = await this.authService.getPermissionsOfUser(decodedToken.sub);
+        const permissions = await this.authService.getPermissionsOfUser(decodedToken.sub); 
         if (permissions) {
             await this.redis.set('permission:'+decodedToken.sub, JSON.stringify(permissions));
             await this.redis.expire('permission:'+decodedToken.sub, 86400);
@@ -58,7 +49,7 @@ export class PermissionsGuard implements CanActivate {
     }
     const getUserPermissions = async () => {
         const cachedPermissions = await this.redis.get('permission:'+decodedToken.sub);
-        if (cachedPermissions) return JSON.parse(cachedPermissions);
+        if (cachedPermissions) return JSON.parse(cachedPermissions).data;
         return getUserPermissionFromDBAndPutToCache();
     };
     const userPermissions = await getUserPermissions();

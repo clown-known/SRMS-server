@@ -10,11 +10,13 @@ import { PageOptionsDto } from 'src/common/pagination/page-options.dto';
 import { PageMetaDto } from 'src/common/pagination/page-meta.dto';
 import { PageDto } from 'src/common/pagination/page.dto';
 import { AccountDTO } from './dto/account.dto';
+import { ProfileService } from '../profile/profile.service';
 
 @Injectable()
 export class AccountService {
   constructor(
               private readonly _accountRepository : AccountRepository,
+              private readonly _profileService : ProfileService,
   ){}
   async createAccount(data: CreateAccountRequest): Promise<AccountDTO>{
     data.password = await hash(data.password);
@@ -37,8 +39,8 @@ export class AccountService {
     return this._accountRepository.update(id, { password: hashedPassword });
   }
   async getAllAccounts(pageOptionsDto: PageOptionsDto,) : Promise<PageDto<AccountDTO>>{
-    const items = await this._accountRepository.findWithOption(pageOptionsDto);
-    const pageMetaDto = new PageMetaDto({ itemCount : items.length, pageOptionsDto });
+    const [items,count] = await this._accountRepository.findWithOption(pageOptionsDto);
+    const pageMetaDto = new PageMetaDto({ itemCount : count, pageOptionsDto });
     return new PageDto(items, pageMetaDto);
   }
 
@@ -50,5 +52,10 @@ export class AccountService {
   }
   public async updateRefreshToken(id: string, token: string): Promise<void> {
     await this._accountRepository.update(id, { refreshToken: token });
+  }
+  public async softDelete(id: string){
+    const entity = await this._accountRepository.findOne(id);
+    await this._profileService.deleteProfile(entity.profileId),
+    await this._accountRepository.delete(id);
   }
 }

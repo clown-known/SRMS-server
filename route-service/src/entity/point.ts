@@ -8,6 +8,12 @@ export class Point extends BaseEntity {
     @Column()
     name: string;
 
+    @Column()
+    description: string;
+
+    @Column()
+    type: string;
+
     @Column('float')
     latitude: number;
 

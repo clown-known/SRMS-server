@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { KafkaService } from './kafka.service';
 import { MailModule } from 'src/mailer/mail.module';
+import { Partitioners } from 'kafkajs';
 
 @Module({
   imports: [
@@ -13,8 +14,11 @@ import { MailModule } from 'src/mailer/mail.module';
           client: {
             brokers: ['localhost:9092'],
           },
+          producer: {
+            createPartitioner: Partitioners.LegacyPartitioner
+          },
           consumer: {
-            groupId: process.env.KAFKA_GROUP_ID || 'notification-consumer',
+            groupId: 'notification-consumer',
             heartbeatInterval: 1000,
             sessionTimeout: 30000,
           },

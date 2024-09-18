@@ -8,7 +8,6 @@ import { MailModule } from './mailer/mail.module';
         ConfigModule.forRoot({
             isGlobal: true,
         }),
-        KafkaModule,
         MailModule,
     ],
 })

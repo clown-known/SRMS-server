@@ -5,7 +5,6 @@ import { ConfigModule } from '@nestjs/config';
 import { KafkaModule } from 'src/kafka/kafka.module';
 
 @Module({
-  imports: [ConfigModule, forwardRef(() => KafkaModule)],
   controllers: [MailController],
   providers: [MailService],
   exports: [MailService],

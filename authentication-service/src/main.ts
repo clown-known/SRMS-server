@@ -19,7 +19,22 @@ async function bootstrap() {
     },
   });
 
+
   await grpcApp.listen();
+
+  const kafkaMicroservice = app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.KAFKA,
+    options: {
+      client: {
+        brokers: ['localhost:9092'],
+      },
+      consumer: {
+        groupId: 'authentication-consumer', 
+      },
+    },
+  });
+
+  await app.startAllMicroservices();
   
 }
 bootstrap();

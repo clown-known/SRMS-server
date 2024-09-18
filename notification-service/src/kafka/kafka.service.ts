@@ -1,7 +1,7 @@
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, Inject, OnModuleInit } from '@nestjs/common';
 import { ClientKafka, MessagePattern } from '@nestjs/microservices';
 import { MailService } from 'src/mailer/mail.service';
-import { EmailTemplate, EmailTemplateSubject } from 'src/common/enum';
+import { EmailTemplate } from 'src/common/enum';
 
 @Injectable()
 export class KafkaService implements OnModuleInit {
@@ -11,21 +11,11 @@ export class KafkaService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    this.kafkaClient.subscribeToResponseOf('auth.registration');
-    await this.kafkaClient.connect();
+    console.log('Connecting Kafka client...');
+    await this.kafkaClient.connect(); 
+    console.log('Kafka client connected');
+    this.kafkaClient.subscribeToResponseOf('auth.registration'); 
+    console.log('Subscribed to auth.registration topic');
   }
 
-  @MessagePattern('auth.registration')
-  async handleUserRegistration(payload: { email: string; username: string; }) {
-    const { email, username } = payload;
-    const template = EmailTemplate.WELCOME;
-    const subjects = EmailTemplateSubject[template];
-
-    await this.mailService.sendMail({
-      to: email,
-      subject: subjects,
-      emailTemplate: template,
-      context: { username },
-    });
-  }
 }

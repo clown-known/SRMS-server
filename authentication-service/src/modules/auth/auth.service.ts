@@ -71,7 +71,7 @@ export class AuthService{
         const profile = await this._profileService.createProfile(data);
         const account = await this._accountService.haftSave({...data, password: hashedPassword,profileId: profile.id,profile:profile});
 
-        await this.kafkaService.sendRegisterEmail(data.email, data.firstName);
+        await this.kafkaService.emitRegisterEmail(data.email, data.firstName);
 
         return plainToInstance(RegisterResponse,{...account,profile});
     }
@@ -83,8 +83,9 @@ export class AuthService{
     async createAuthenCode(email: string){
         const account = await this._accountService.findByEmail(email)
         const entity = await this._authRepository.createAuthenCode(account.id)
-        
+        await this.kafkaService.emitAuthenCode(email, entity.code);
     }
+
     async confirmAuthencode(data: ConfirmAuthencodeRequest) {
         const account = await this._accountService.findByEmail(data.email)
         if(!account) throw new BadRequestException(' email is not found!');

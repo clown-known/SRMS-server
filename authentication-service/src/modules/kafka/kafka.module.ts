@@ -14,17 +14,22 @@ import { Partitioners } from 'kafkajs';
         transport: Transport.KAFKA,
         options: {
           client: {
-
-            brokers: ['localhost:9092'],
-
+            brokers: ['kafka:9092'],
+            connectionTimeout: 10000,
+            requestTimeout: 300000,
           },
           producer: {
-            createPartitioner: Partitioners.LegacyPartitioner
+            createPartitioner: Partitioners.LegacyPartitioner,
+            retry: {
+              retries: 20,
+              initialRetryTime: 30000, 
+              factor: 2,
+            },
           },
           consumer: {
             groupId: 'notification-consumer',
             heartbeatInterval: 1000,
-            sessionTimeout: 30000,
+            sessionTimeout: 300000,
 
           },
 

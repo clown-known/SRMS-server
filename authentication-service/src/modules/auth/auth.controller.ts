@@ -30,6 +30,7 @@ export class AuthenticationController{
     @Post('register')
     @UseInterceptors(TransactionInterceptor)
     register(@Body() req: RegisterRequest){
+        console.log(req);
         return this.authenticationService.register(req);
     }
 

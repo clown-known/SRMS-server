@@ -64,11 +64,11 @@ export class PointService {
     }
 
     async removePoint(id: string): Promise<void> {
-        const point = await this.findOne(id);
+        const point = await this.pointRepository.findOne({ where: { id } });
         if (!point) { 
             throw new NotFoundException('Point not found');
         }
-        await this.pointRepository.remove(point as Point);
+        await this.pointRepository.remove(point);
     }
 
 }

@@ -20,6 +20,6 @@ export const postgresOptions: DataSourceOptions = {
       subscribers:[RolePermissionSubscriber]
     
 };
-// console.log(postgresOptions)
+console.log(postgresOptions)
 const dataSource = new DataSource(postgresOptions);
 export default dataSource;

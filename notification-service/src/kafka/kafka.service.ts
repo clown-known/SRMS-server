@@ -1,33 +1,21 @@
-import { Injectable } from '@nestjs/common';
-import { Kafka, Consumer, Producer } from 'kafkajs';
+import { Injectable, Inject, OnModuleInit } from '@nestjs/common';
+import { ClientKafka, MessagePattern } from '@nestjs/microservices';
+import { MailService } from 'src/mailer/mail.service';
+import { EmailTemplate } from 'src/common/enum';
 
 @Injectable()
-export class KafkaService {
-  private kafka = new Kafka({
-    brokers: [process.env.KAFKA_BROKER_1, process.env.KAFKA_BROKER_2, process.env.KAFKA_BROKER_3],
-  });
-
-  private producer: Producer = this.kafka.producer();
-  private consumer: Consumer = this.kafka.consumer({ groupId: 'notification-group' });
+export class KafkaService implements OnModuleInit {
+  constructor(
+    @Inject('KAFKA_SERVICE') private readonly kafkaClient: ClientKafka,
+    private readonly mailService: MailService,
+  ) {}
 
   async onModuleInit() {
-    await this.producer.connect();
-    await this.consumer.connect();
+    console.log('Connecting Kafka client...');
+    await this.kafkaClient.connect(); 
+    console.log('Kafka client connected');
+    this.kafkaClient.subscribeToResponseOf('auth.registration'); 
+    console.log('Subscribed to auth.registration topic');
   }
 
-  async sendMessage(topic: string, message: any) {
-    await this.producer.send({
-      topic,
-      messages: [{ value: JSON.stringify(message) }],
-    });
-  }
-
-  async subscribeToTopic(topic: string, onMessage: (message: any) => void) {
-    await this.consumer.subscribe({ topic });
-    await this.consumer.run({
-      eachMessage: async ({ message }) => {
-        onMessage(message);
-      },
-    });
-  }
 }

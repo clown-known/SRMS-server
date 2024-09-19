@@ -21,7 +21,9 @@ import { AuthRepository } from "./auth.repository";
 import { ConfirmAuthencodeRequest } from "./dto/request/confirm-authencode-request.dto";
 import { access } from "fs";
 import resetTokenConfig from "src/config/reset-token.config";
+import { KafkaService } from "../kafka/kafka.service";
 import { LoginResponse } from "./dto/response/login-response.dto";
+
 
 @Injectable()
 export class AuthService{
@@ -35,6 +37,7 @@ export class AuthService{
         private readonly _permissionSerivce: PermissionService,
         private readonly _authRepository: AuthRepository,
         @InjectRedis() private readonly redis: Redis,
+        private readonly kafkaService: KafkaService,
         
     ){}
     async getPermissionsOfUser(id: string) {
@@ -71,8 +74,8 @@ export class AuthService{
         const hashedPassword = await hash(data.password);
         const profile = await this._profileService.createProfile(data);
         const account = await this._accountService.haftSave({...data, password: hashedPassword,profileId: profile.id,profile:profile});
+        await this.kafkaService.emitRegisterEmail(data.email, data.firstName);
         return this.login({email:data.email,password:data.password});
-        // return plainToInstance(RegisterResponse,{...account,profile});
     }
 
     private async updateRefreshToken(data: UpdateRefreshTokenRequest): Promise<void> {
@@ -82,8 +85,10 @@ export class AuthService{
     async createAuthenCode(email: string){
         const account = await this._accountService.findByEmail(email)
         const entity = await this._authRepository.createAuthenCode(account.id)
-        // send email
+        await this.kafkaService.emitAuthenCode(email, entity.code);
+
     }
+
     async confirmAuthencode(data: ConfirmAuthencodeRequest) {
         const account = await this._accountService.findByEmail(data.email)
         if(!account) throw new BadRequestException(' email is not found!');

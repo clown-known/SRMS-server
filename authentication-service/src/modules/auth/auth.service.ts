@@ -86,6 +86,7 @@ export class AuthService{
         const account = await this._accountService.findByEmail(email)
         const entity = await this._authRepository.createAuthenCode(account.id)
         await this.kafkaService.emitAuthenCode(email, entity.code);
+
     }
 
     async confirmAuthencode(data: ConfirmAuthencodeRequest) {

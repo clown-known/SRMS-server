@@ -18,6 +18,7 @@ import { JwtStrategy } from './stragery/jwt.strangery';
 import { RefreshTokenStrategy } from './stragery/refreshToken.strategy';
 import { JwtResetPasswordStrategy } from './stragery/jwt.reset.password.strategy';
 import resetTokenConfig from './config/reset-token.config';
+import { KafkaModule } from './modules/kafka/kafka.module';
 
 @Module({
   imports: [
@@ -33,7 +34,7 @@ import resetTokenConfig from './config/reset-token.config';
     ConfigModule.forFeature(jwtConfig),
     ConfigModule.forFeature(refreshTokenConfig),
     ConfigModule.forFeature(resetTokenConfig),
-    AccountModule,AuthModule,PermissionModule,RoleModule,ProfileModule
+    AccountModule,AuthModule,PermissionModule,RoleModule,ProfileModule, KafkaModule
   ],
   controllers: [],
   providers: [

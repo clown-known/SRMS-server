@@ -8,6 +8,12 @@ export class PointDTO {
   name: string;
 
   @Expose()
+  description: string;
+
+  @Expose()
+  type: string;
+
+  @Expose()
   latitude: number;
 
   @Expose()

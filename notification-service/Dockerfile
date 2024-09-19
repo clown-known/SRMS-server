@@ -10,6 +10,9 @@ COPY package*.json ./
 # Install dependencies
 RUN npm install --production
 
+# Install Nest CLI
+RUN npm install -g @nestjs/cli
+
 # Copy the rest of the application code
 COPY . .
 
@@ -25,6 +28,7 @@ WORKDIR /app
 # Copy only the necessary files from the builder stage
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/src/mailer/templates /app/src/mailer/templates
 
 # Install only production dependencies
 RUN npm install --production

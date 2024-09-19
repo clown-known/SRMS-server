@@ -22,8 +22,8 @@ export class RoleService {
         private dataSource: DataSource
     ){}
     async getAll( pageOptionsDto: PageOptionsDto){
-        const items = await this.roleRepository.findWithOptions(pageOptionsDto);
-        const pageMetaDto = new PageMetaDto({ itemCount : items.length, pageOptionsDto });
+        const [items,itemCount] = await this.roleRepository.findWithOptions(pageOptionsDto);
+        const pageMetaDto = new PageMetaDto({ itemCount : itemCount, pageOptionsDto });
         return new PageDto(items, pageMetaDto);
     }
     async getById(id: string){

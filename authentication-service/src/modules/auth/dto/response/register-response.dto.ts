@@ -1,6 +1,6 @@
 export class RegisterResponse {
     email: string;
-    name: string;
+    fullName: string;
     phone: string;
     address: string;
 }

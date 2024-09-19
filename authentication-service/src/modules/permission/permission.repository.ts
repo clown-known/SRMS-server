@@ -56,15 +56,31 @@ export class PermissionRepository extends BaseRepository {
         const result = await this.getRepository(Permission).find();
         return transformToDTO(PermissionDTO,result)
     }
-    async findWithOptions(pageOptionsDto?: PageOptionsDto,): Promise<PermissionDTO[]>{
-        const value = await this.getRepository(Permission).find({
-            skip : pageOptionsDto.skip,
-            take : pageOptionsDto.take,
-            where:{
-                module : Like('%'+pageOptionsDto.searchKey+'%')
-            }
-        })
-        return transformToDTO(PermissionDTO,value)
+    async findWithOptions(pageOptionsDto?: PageOptionsDto,): Promise<[PermissionDTO[],itemCount: number]>{
+        // const value = await this.getRepository(Permission).find({
+        //     skip : pageOptionsDto.skip,
+        //     take : pageOptionsDto.take,
+        //     where:{
+        //         module : Like('%'+pageOptionsDto.searchKey+'%')
+        //     }
+        // })
+        const queryBuilder = this.getRepository(Permission).createQueryBuilder("permission");
+        // Count total items
+        const itemCount = await queryBuilder
+            .where({
+                module: Like('%' + pageOptionsDto.searchKey + '%')
+            })
+            .getCount();
+
+        // Fetch paginated results
+        const entities = await queryBuilder
+            .skip(pageOptionsDto.skip)
+            .take(pageOptionsDto.take)
+            .getMany();
+
+        console.log(itemCount); // Log total count
+        return [transformToDTO(PermissionDTO, entities),itemCount];
+        // return transformToDTO(PermissionDTO,value)
     }
 }
 

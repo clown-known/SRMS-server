@@ -10,7 +10,7 @@ export enum Actions {
   DELETE = 'delete',
   DELETE_RELATED = 'delete_related',
   GET = 'get',
-  GET_ALL = 'get_all',
+  GET_ALL = 'read',
   GET_RELATED = 'get_related',
 }
 export enum Order {

@@ -17,8 +17,8 @@ export class RoleRepository extends BaseRepository {
     async find() {
         return await this.getRepository(Roles).find();
     }
-    async findWithOptions(pageOptionsDto: PageOptionsDto,): Promise<RoleDTO[]>{    
-        return await this.getRepository(Roles).find({
+    async findWithOptions(pageOptionsDto: PageOptionsDto,): Promise<[RoleDTO[],number]>{    
+        const item = await this.getRepository(Roles).find({
             relations: ['rolePermissions', 'rolePermissions.permission'],
             take: pageOptionsDto.take,
             skip: pageOptionsDto.skip,
@@ -26,6 +26,12 @@ export class RoleRepository extends BaseRepository {
                 name : Like('%'+pageOptionsDto.searchKey+'%')
             }
         });
+        const itemCount = (await this.getRepository(Roles).find({
+            where:{
+                name : Like('%'+pageOptionsDto.searchKey+'%')
+            }
+        })).length;
+        return [item,itemCount]
     }
 
     async getRoleById(id: string) : Promise<Roles|null>{

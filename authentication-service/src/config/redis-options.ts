@@ -6,8 +6,8 @@ export const redisOptions: RedisModuleAsyncOptions = {
     useFactory: () => ({
         type: 'single',
         options:{
-            // host: process.env.REDIS_HOST,
-            host: 'localhost',
+            host: process.env.REDIS_HOST,
+            // host: 'localhost',
             port: +process.env.REDIS_PORT
     }
 })}

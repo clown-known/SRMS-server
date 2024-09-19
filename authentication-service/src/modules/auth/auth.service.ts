@@ -82,7 +82,7 @@ export class AuthService{
     async createAuthenCode(email: string){
         const account = await this._accountService.findByEmail(email)
         const entity = await this._authRepository.createAuthenCode(account.id)
-        
+        // send email
     }
     async confirmAuthencode(data: ConfirmAuthencodeRequest) {
         const account = await this._accountService.findByEmail(data.email)

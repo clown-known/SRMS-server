@@ -2,17 +2,20 @@
 
 services:
   postgres:
-    container_name: postgres_container
-    image: postgres:${POSTGRES_VERSION:-16}
+    container_name: postgres_authentication
+    image: postgres:${POSTGRES_VERSION}
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-12345}
-      POSTGRES_DB: ${POSTGRES_DATABASE:-postgres}
-      PGDATA: /data/postgres
+      POSTGRES_DB: ${POSTGRES_DATABASE}
+      # POSTGRES_USER: postgres
+      # POSTGRES_PASSWORD: postgres
+      # POSTGRES_DB: postgres
+      PGDATA: /data/postgres-server
     volumes:
-      - postgres:/data/postgres
+      - postgres:/data/postgres-server
     ports:
-      - ${POSTGRES_PORT:-5433}:5432
+      - ${POSTGRES_PORT}:5432
     networks:
       - microservice-network
     restart: unless-stopped
@@ -32,7 +35,6 @@ services:
     networks:
       - microservice-network
     restart: unless-stopped
-
 
   redis-master:
     image: redis:6.0.7
@@ -59,9 +61,8 @@ services:
       - microservice-network
 
   authentication-service:
-    build: 
-      context: ./authentication-service
-    container_name: authentication_service 
+    build: ./authentication-service
+    container_name: authentication_service
     ports:
       - "3001:3001"
     env_file:
@@ -70,26 +71,31 @@ services:
       - microservice-network
     depends_on:
       - redis-master
-      - postgres
+      # - postgres
       - kafka
 
-  # route-service:
-  #   build: ./route-service
-  #   container_name: route_service
-  #   ports:
-  #     - "3002:3000"
-  #   env_file:
-  #     - ./route-service/.env
-  #   networks:
-  #     - microservice-network
-  #   depends_on:
-  #     - postgres
+  route-service:
+    build:
+      context: ./route-service
+      dockerfile: Dockerfile
+    container_name: route_service
+    ports:
+      - "3002:3002"
+    env_file:
+      - ./route-service/.env
+    networks:
+      - microservice-network
+    depends_on:
+      - postgres-2
+      - redis-master
 
   notification-service:
     build: ./notification-service
     container_name: notification_service
+    env_file:
+      - ./notification-service/.env
     ports:
-      - "3003:3000"
+      - "3003:3003"
     environment:
       KAFKA_BROKERS: kafka:9092
     depends_on:
@@ -119,54 +125,6 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-
-
-
-  # kafka-2:
-  #   image: confluentinc/cp-kafka:latest
-  #   container_name: kafka-2
-  #   depends_on:
-  #     - zookeeper
-  #   environment:
-  #     KAFKA_BROKER_ID: 2
-  #     KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-  #     KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-2:29093,PLAINTEXT_HOST://localhost:9093
-  #     KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29093,PLAINTEXT_HOST://0.0.0.0:9093
-  #     KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-  #     KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-  #     KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
-  #     KAFKA_DELETE_TOPIC_ENABLE: 'true'
-  #     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
-  #   ports:
-  #     - "9093:9093"
-  #     - "29093:29093"
-  #   networks:
-  #     - kafka-cluster-network
-  #     - microservice-network
-
-
-  # kafka-3:
-  #   image: confluentinc/cp-kafka:latest
-  #   container_name: kafka-3
-  #   depends_on:
-  #     - zookeeper
-  #   environment:
-  #     KAFKA_BROKER_ID: 3
-  #     KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-  #     KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-3:29094,PLAINTEXT_HOST://localhost:9094
-  #     KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29094,PLAINTEXT_HOST://0.0.0.0:9094
-  #     KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-  #     KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-  #     KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
-  #     KAFKA_DELETE_TOPIC_ENABLE: 'true'
-  #     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
-  #   ports:
-  #     - "9094:9094"
-  #     - "29094:29094"
-  #   networks:
-  #     - kafka-cluster-network
-  #     - microservice-network
-
 
   nginx:
     image: nginx:latest

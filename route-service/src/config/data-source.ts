@@ -1,6 +1,6 @@
 import { configDotenv } from "dotenv";
 import { join } from "path";
-import { Point, Route } from "../entity";
+import { Point, Route } from "src/entity";
 import { DataSource, DataSourceOptions } from "typeorm";
 
 const envPath = join(process.cwd(), '.env');

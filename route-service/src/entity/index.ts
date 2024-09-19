@@ -1,2 +1,2 @@
-export * from './Point';
-export * from './Route';
+export * from 'src/entity/point';
+export * from 'src/entity/route';

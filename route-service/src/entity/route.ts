@@ -1,5 +1,7 @@
-import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { Point } from '../entity';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Point } from 'src/entity/point';
+import { BaseEntity } from 'src/common/base.entity';
+
 
 @Entity()
 export class Route extends BaseEntity {

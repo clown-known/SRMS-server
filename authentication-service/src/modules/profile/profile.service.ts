@@ -23,6 +23,9 @@ export class ProfileService {
     async updateProfile(accountId :string, profile: UpdateProfileRequest) {
         return this._profileRepository.update(accountId,profile);
     }
+    async haftUpdate(profileId :string, profile: DeepPartial<Profile>) {
+        return this._profileRepository.haftUpdate(profileId,profile);
+    }
 
     async deleteProfile(accountId: string): Promise<void> {
         await this._profileRepository.delete(accountId);

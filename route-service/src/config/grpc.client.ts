@@ -5,7 +5,7 @@ const grpcOptions : ClientOptions = {
         options: {
             package: 'permission',
             protoPath: './src/proto/permission.proto',
-            url: '127.0.0.1:5000',
+            url: 'grpc-server:7000',
         },
 }
 export default grpcOptions

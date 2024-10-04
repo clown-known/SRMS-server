@@ -6,9 +6,10 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 import { jwtConfig, refreshTokenConfig } from "src/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { Account } from "src/entity";
-import { PermissionRepository } from "../permission/permission.repository";
 import { PermissionModule } from "../permission/permission.module";
 import { ProfileModule } from "../profile/profile.module";
+import { RoleModule } from "../role/role.module";
+import { KafkaModule } from "../kafka/kafka.module";
 
 @Module({
     imports: [
@@ -16,7 +17,9 @@ import { ProfileModule } from "../profile/profile.module";
         ConfigModule.forFeature(jwtConfig),
         ConfigModule.forFeature(refreshTokenConfig),
         PermissionModule,
-        ProfileModule
+        ProfileModule,
+        RoleModule,
+        KafkaModule
     ],
     controllers: [AuthenticationController],
     providers: [

@@ -23,6 +23,7 @@ import { access } from "fs";
 import resetTokenConfig from "src/config/reset-token.config";
 import { KafkaService } from "../kafka/kafka.service";
 import { LoginResponse } from "./dto/response/login-response.dto";
+import { Profile } from "src/entity";
 
 
 @Injectable()
@@ -46,6 +47,20 @@ export class AuthService{
     // async getAllUsersWithPermission(permissionId: string) {
     //     return this._authRepository.getAllUsersWithPermission(permissionId);
     // }
+    async getMe(id: string){
+        const account = await this._accountService.findById(id);
+        if (account) {
+            const permission = await this._permissionSerivce.getPermissionsOfUser(account.id);
+            const p = permission.map(e=>{
+                return (`${e.module}:${e.action}`)
+            })
+            return {
+                name: account.profile.firstName + ' ' + account.profile.lastName,
+                permissions: p
+            };
+        }
+        throw new UnauthorizedException('Invalid email or password');
+    }
     async login(data: LoginRequest) : Promise<LoginResponse> {
         const account = await this._accountService.findByEmail(data.email);
         if (account && await compare(data.password, account.password)) {
@@ -69,11 +84,19 @@ export class AuthService{
     }
 
     async register(data: RegisterRequest){
-        console.log( await this._accountService.findByEmail(data.email));
         if(await this._accountService.findByEmail(data.email)!=null) throw new BadRequestException('email aready exist!');
         const hashedPassword = await hash(data.password);
-        const profile = await this._profileService.createProfile(data);
-        const account = await this._accountService.haftSave({...data, password: hashedPassword,profileId: profile.id,profile:profile});
+        const profile = await this._profileService.createProfile({
+            firstName: data.firstName,
+            lastName: data.lastName,
+            address: data.address,
+            dateOfBirth: data.dateOfBirth,
+            phoneNumber: data.phoneNumber
+        });
+        const account = await this._accountService.haftSave({email:data.email, password: hashedPassword,profileId: profile.id,profile:profile});
+        await this._profileService.haftUpdate(profile.id,{
+            accountId: account.id
+        } )
         await this.kafkaService.emitRegisterEmail(data.email, data.firstName);
         return this.login({email:data.email,password:data.password});
     }
@@ -93,17 +116,22 @@ export class AuthService{
         const account = await this._accountService.findByEmail(data.email)
         if(!account) throw new BadRequestException(' email is not found!');
         if(await this._authRepository.confirmAuthenCode(data.code,account.id)){
-            const payload : JwtPayload = { sub: account.id , email: data.email, isResetPass: true};
+            const payload : JwtPayload = { sub: account.id , email: data.email, isResetPass: true, code: data.code};
             const token = await this._jwtService.sign(payload,this.resetPasswordTokenConfig);
             return { accessToken :token};
         }else{
-            throw new UnauthorizedException(' code is not valid! ');
+            throw new ForbiddenException(' code is not valid! ');
         }
     }
-    async resetPassword(accountId: string, newPassword: string){
+    async resetPassword(accountId: string, newPassword: string, code: string){
         const hashedPassword = await hash(newPassword)
-        await this._accountService.haftUpdate(accountId,{password:hashedPassword})
-        return true;
+        if(await this._authRepository.useAuthenCode(code,accountId)){
+            await this._accountService.haftUpdate(accountId,{password:hashedPassword})
+            return true;
+        }else{
+            throw new ForbiddenException(' token is used! ');
+        }
+        return false;
     }
     async refreshToken(refreshToken: string) : Promise<ITokenResponse> {
         const exPayload = ( async () => {
@@ -121,7 +149,7 @@ export class AuthService{
             const token = await this._jwtService.sign(payload);
             const expiredAt = this._configService.get('JWT_EXPIRE_IN');
             return { accessToken : token,expiredAt};
-        } 
+        }else throw new ForbiddenException('token is not valid')
     }
 
     async generateTokens(id: string, email: string): Promise<ITokenResponse> {

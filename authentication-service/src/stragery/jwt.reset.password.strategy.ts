@@ -26,8 +26,9 @@ export class JwtResetPasswordStrategy extends PassportStrategy(Strategy, 'jwt-pa
         console.log(payload);
         return {
             id: payload.sub,
-            email: payload.email,
-            isResetPass: payload.isResetPass
+            email: payload.email, 
+            isResetPass: payload.isResetPass,
+            code: payload.code
         }
     }
   // ... rest of the code ...

@@ -10,13 +10,19 @@ export class Profile extends BaseEntity{
     @Column()
     lastName: string;
 
-    @Column()
+    @Column({
+        nullable:true
+    })
     phoneNumber: string;
 
-    @Column()
+    @Column({
+        nullable:true
+    })
     address: string;
 
-    @Column()
+    @Column({
+        nullable:true
+    })
     dateOfBirth: Date;
 
     @Column({

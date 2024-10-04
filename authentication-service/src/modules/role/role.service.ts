@@ -41,9 +41,16 @@ export class RoleService {
     }
 
     async updateRole(id: string, data: UpdateRoleDTO){
-        const updateEntity = this.roleRepository.getRoleById(id);
-        if(!updateEntity) throw new BadRequestException('Role was not found!');
-        const updated = this.roleRepository.updateRole(id,{...updateEntity, name: data.name, permissionIds: data.permissionIds});
+        const entity = await this.roleRepository.getRoleById(id);
+        if(!entity) throw new BadRequestException('Role was not found!');
+        await this.rolePermissionRepository.deletePermissionOfRoleByRoleId(id);
+        await this.roleRepository.updateRole(id,{name: data.name});
+        const permissions = await this.permissionService.getPermissions(data.permissions.map(e=>{return e.id as string}));
+        console.log(permissions)
+        const updatedEntity = await this.roleRepository.getRoleById(id);
+        const result = this.rolePermissionRepository.addPermissionToRole(updatedEntity,permissions);
+
+        return result
     }
 
     async deletePermissionOfRole(roleId: string,permisisonId : string){

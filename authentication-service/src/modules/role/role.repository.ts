@@ -48,10 +48,10 @@ export class RoleRepository extends BaseRepository {
         return this.getRepository(Roles).softDelete(id)
     }
 
-    async updateRole(id: string, data: UpdateRoleDTO){
+    async updateRole(id: string, data: DeepPartial<Roles>){
         return this.getRepository(Roles).update(id,data);
     }
-
+    
     async addPermissionToRole(roleId: string, permissionId: string) {
         const role = await this.getRepository(Roles).findOne({ 
             where: { id: roleId }

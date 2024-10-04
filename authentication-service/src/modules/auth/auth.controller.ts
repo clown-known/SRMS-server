@@ -7,13 +7,16 @@ import { JWTAuthGuard } from "src/guards/jwt-auth/jwt-auth.guard";
 import { TransactionInterceptor } from "src/common/transaction.interceptor";
 import { ForgotPasswordRequest } from "./dto/request/forgot-password-request.dto";
 import { ConfirmAuthencodeRequest } from "./dto/request/confirm-authencode-request.dto";
-import { JwtResetPasswordStrategy } from "src/stragery/jwt.reset.password.strategy";
 import { ResetPasswordGuard } from "src/guards/reset-password.guard";
 import { ResetPasswordRequest } from "./dto/request/reset-password.request.dto";
+import { transformToDTO } from "src/common/transform.util";
+import { AccountDTO } from "../account/dto/account.dto";
+import { AccountService } from "../account/account.service";
 
 @Controller('auth')
 export class AuthenticationController{
     constructor(private readonly authenticationService: AuthService,
+        private readonly accountService: AccountService
     ){
     }
     @Post('login')
@@ -26,7 +29,13 @@ export class AuthenticationController{
     logout(@Req() req){
         return this.authenticationService.logout(req.user.id);
     }
-    
+
+    @UseGuards(JWTAuthGuard)
+    @Get('get-me')
+    getMee(@Req() req){
+        return this.authenticationService.getMe(req.user.id);
+    }
+
     @Post('register')
     @UseInterceptors(TransactionInterceptor)
     register(@Body() req: RegisterRequest){
@@ -54,7 +63,14 @@ export class AuthenticationController{
     @UseGuards(ResetPasswordGuard)
     @Post('reset-password')
     resetPassword(@Req() req, @Body() data:  ResetPasswordRequest ){
-        console.log(req.user.id)
-        return this.authenticationService.resetPassword(req.user.id,data.newPassword);
+        console.log(req.user.code)
+        return this.authenticationService.resetPassword(req.user.id,data.newPassword,req.user.code);
+    }
+
+    @Get('my-account')
+    @UseGuards(JWTAuthGuard)
+    getProfile(@Req() req){
+        console.log(req.user)
+        return transformToDTO(AccountDTO,this.accountService.findById(req.user.id));
     }
 }

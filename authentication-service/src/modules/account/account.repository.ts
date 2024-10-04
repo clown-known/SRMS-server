@@ -24,7 +24,7 @@ export class AccountRepository extends BaseRepository{
             ...(pageOptionsDto.orderBy? { [pageOptionsDto.orderBy]: pageOptionsDto.order } : {}),
         }       
         const value = await this.getRepository(Account).find({
-            relations: ['profile'],
+            relations: ['profile','role'],
             take: pageOptionsDto.take,
             order,
             skip: pageOptionsDto.skip,
@@ -46,9 +46,14 @@ export class AccountRepository extends BaseRepository{
         return plainToInstance(AccountDTO,value);
     }
     async findOne(id : string) : Promise<Account | null>{
-        return await this.getRepository(Account).findOne({relations: ['profile'] , where: { id } });
+        return await this.getRepository(Account).findOne({relations: ['profile','role'] , where: { id } });
     }
     async update(id: string,data : DeepPartial<Account>): Promise<AccountDTO | null>{
+        if(!this.findOne(id)) throw new BadRequestException(' object not found!');
+        const updated = await this.getRepository(Account).update(id,data);
+        return transformToDTO(AccountDTO,updated)
+    }
+    async halfUpdate(id:string,data : DeepPartial<Account>){
         if(!this.findOne(id)) throw new BadRequestException(' object not found!');
         const updated = await this.getRepository(Account).update(id,data);
         return transformToDTO(AccountDTO,updated)
@@ -57,6 +62,12 @@ export class AccountRepository extends BaseRepository{
         if(!this.findByEmail(data.email)) throw new BadRequestException(' email is already exist!');
         const saved = await this.getRepository(Account).save(data);
         return transformToDTO(AccountDTO,saved);
+    }
+    async haftSave(data : DeepPartial<Account>){
+        if(!this.findByEmail(data.email)) throw new BadRequestException(' email is already exist!');
+        const saved = await this.getRepository(Account).save(data);
+        console.log(saved)
+        return saved
     }
 
     async delete(id: string){

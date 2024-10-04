@@ -1,5 +1,3 @@
-
-
 import { Expose, Transform } from "class-transformer";
 
 export class ProfileDTO {
@@ -8,7 +6,10 @@ export class ProfileDTO {
 
     accountId?: string;
 
+    @Expose()
     firstName: string;
+
+    @Expose()
     lastName: string;
 
     @Transform(({obj})=>obj.firstName + ' ' + obj.lastName)

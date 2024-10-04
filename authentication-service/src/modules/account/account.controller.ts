@@ -10,6 +10,8 @@ import { PageOptionsDto } from 'src/common/pagination/page-options.dto';
 import { AccountDTO } from './dto/account.dto';
 import { PageDto } from 'src/common/pagination/page.dto';
 import { TransactionInterceptor } from 'src/common/transaction.interceptor';
+import { AssignRoleToUserRequest } from './dto/request/assign-role-to-user-request.dto';
+import { UpdateAccountRequest } from './dto/request';
 
 @Controller('account')
 
@@ -20,13 +22,20 @@ export class AuthenticationController {
   createUser(@Body() req: CreateAccountRequest) : Promise<AccountDTO>{
     return this.accountService.createAccount(req);
   }
+  @Put(':id')
+  updateUser( @Param('id') id: string,@Body() req: UpdateAccountRequest) : Promise<AccountDTO>{
+    return this.accountService.updateAccount(id,req);
+  }
 
   @Get(':id')
   findById(@Param('id') id: string){
     return this.accountService.findById(id);
   } 
-  
-  @Put(':id/changePassword')
+  @Get()
+  resetPassword(@Param('id') id: string){
+    
+  }
+  @Put('changePassword/:id')
   @UseGuards(JWTAuthGuard)
   changePassword(@Req() req, @Param('id') id: string,@Body() data: ChangePasswordRequest){
     if(req.user.id != id) throw new UnauthorizedException('Token is not valid for this user!');
@@ -34,10 +43,10 @@ export class AuthenticationController {
   }
 
   @Get()
-  @UseGuards(PermissionsGuard)
-  @Permissions([
-    {module: Modules.ACCOUNT, action: Actions.GET_ALL},
-  ])
+  // @UseGuards(PermissionsGuard)
+  // @Permissions([
+  //   {module: Modules.ACCOUNT, action: Actions.GET_ALL},
+  // ])
   getAllAccount( @Query() pageOptionsDto: PageOptionsDto,):Promise<PageDto<AccountDTO>>{
     return this.accountService.getAllAccounts(pageOptionsDto);
   }
@@ -46,5 +55,9 @@ export class AuthenticationController {
   @UseInterceptors(TransactionInterceptor)
   deleteUser(@Param('id') id: string){
     return this.accountService.softDelete(id);
+  }
+  @Put('assign')
+  assignRoleToUser(@Body() data: AssignRoleToUserRequest){
+    return this.accountService.assignRole(data.userId,data.roleId);
   }
 }

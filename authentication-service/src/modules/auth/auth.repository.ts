@@ -5,7 +5,7 @@ import { Request } from "express";
 import { BaseRepository } from "src/common/base-repository";
 import { Account, Permission } from "src/entity";
 import { AuthenticationCode } from "src/entity/authentication_code";
-import { DataSource } from "typeorm";
+import { DataSource, MoreThan } from "typeorm";
 import { AccountDTO } from "../account/dto/account.dto";
 import { ConfirmAuthencodeRequest } from "./dto/request/confirm-authencode-request.dto";
 
@@ -23,14 +23,30 @@ export class AuthRepository extends BaseRepository {
         const entity = {
             code: code,
             accountId: accountId,
+            expiredTime: (Date.now() + 60 *5).toString()
         } 
         return await this.getRepository(AuthenticationCode).save(entity);
     }
     async confirmAuthenCode(code: string, accountId: string): Promise<boolean>{
         const entity = await this.getRepository(AuthenticationCode).findOne({
-            where : {code: code, isUsed: false, accountId: accountId}
+            where : {code: code, isUsed: false, accountId: accountId
+            }
         });
-        if(!entity) throw new ForbiddenException(' Code is not valid!');
+        if(!entity) return false;
+        if(Date.parse(entity.expiredTime)<Date.now()) return false;
+
+        // await this.getRepository(AuthenticationCode).update(entity.id,{isUsed:true});
+        return true;
+    }
+    async useAuthenCode(code: string, accountId: string): Promise<boolean>{
+        const entity = await this.getRepository(AuthenticationCode).findOne({
+            where : {code: code, isUsed: false, accountId: accountId
+            }
+        });
+        console.log(entity)
+        if(!entity) return false;
+        console.log(Date.parse(entity.expiredTime)<Date.now())
+        if(Date.parse(entity.expiredTime)<Date.now()) return false;
         await this.getRepository(AuthenticationCode).update(entity.id,{isUsed:true});
         return true;
     }

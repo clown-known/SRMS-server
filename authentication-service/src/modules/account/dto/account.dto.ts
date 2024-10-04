@@ -7,7 +7,9 @@ export class AccountDTO{
     
     password:string;
 
+    @Expose()
     id: string;
+
     @Expose()
     email :string;
     
@@ -18,7 +20,6 @@ export class AccountDTO{
     @Expose()
     @Type(() => ProfileDTO)
     profile?: ProfileDTO;
-
     
     refreshToken:string;
 }

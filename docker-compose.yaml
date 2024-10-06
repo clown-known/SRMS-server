@@ -1,40 +1,47 @@
 # version: '3.9'
 
 services:
-  postgres:
-    container_name: postgres_authentication
-    image: postgres:${POSTGRES_VERSION}
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-12345}
-      POSTGRES_DB: ${POSTGRES_DATABASE}
-      # POSTGRES_USER: postgres
-      # POSTGRES_PASSWORD: postgres
-      # POSTGRES_DB: postgres
-      PGDATA: /data/postgres-server
-    volumes:
-      - postgres:/data/postgres-server
-    ports:
-      - ${POSTGRES_PORT}:5432
-    networks:
-      - microservice-network
-    restart: unless-stopped
+  # postgres:
+  #   container_name: postgres_authentication
+  #   image: postgres:${POSTGRES_VERSION}
+  #   environment:
+  #     POSTGRES_USER: ${POSTGRES_USER:-user}
+  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-12345}
+  #     POSTGRES_DB: ${POSTGRES_DATABASE}
+  #     # POSTGRES_USER: postgres
+  #     # POSTGRES_PASSWORD: postgres
+  #     # POSTGRES_DB: postgres
+  #     PGDATA: /data/postgres-server
+  #   volumes:
+  #     - postgres:/data/postgres-server
+  #   ports:
+  #     - ${POSTGRES_PORT}:5432
+  #   networks:
+  #     - microservice-network
+  #   restart: unless-stopped
 
-  postgres-2:
-    container_name: postgres_container_2
-    image: postgres:${POSTGRES_VERSION}
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-sa}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-123}
-      POSTGRES_DB: ${POSTGRES_ROUTE_DATABASE}
-      PGDATA: /data/postgres
-    volumes:
-      - postgres:/data/postgres_2
+  # postgres-2:
+  #   container_name: postgres_container_2
+  #   image: postgres:${POSTGRES_VERSION}
+  #   environment:
+  #     POSTGRES_USER: ${POSTGRES_USER:-sa}
+  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-123}
+  #     POSTGRES_DB: ${POSTGRES_ROUTE_DATABASE}
+  #     PGDATA: /data/postgres
+  #   volumes:
+  #     - postgres:/data/postgres_2
+  #   ports:
+  #     - ${POSTGRES_ROUTE_PORT}:5432
+  #   networks:
+  #     - microservice-network
+  #   restart: unless-stopped
+
+  grpc-server:
+    build:
+      context: ./authentication-service/src/grpc-server
+      dockerfile: Dockerfile
     ports:
-      - ${POSTGRES_ROUTE_PORT}:5432
-    networks:
-      - microservice-network
-    restart: unless-stopped
+      - "7000:7000"
 
   redis-master:
     image: redis:6.0.7
@@ -85,9 +92,9 @@ services:
       - ./route-service/.env
     networks:
       - microservice-network
-    depends_on:
-      - postgres-2
-      - redis-master
+    # depends_on:
+    #   - postgres-2
+    #   - redis-master
 
   notification-service:
     build: ./notification-service

@@ -42,6 +42,12 @@ export class ProfileRepository extends BaseRepository{
         const saved = await this.getRepository(Profile).update(profile.id,{...data}as Profile);
         return transformToDTO(ProfileDTO,saved);
     }
+    async haftUpdate(id: string, data: DeepPartial<Profile>){
+        console.log(data)
+        const saved = await this.getRepository(Profile).update(id,data);
+        // console.log(saved)
+        return transformToDTO(ProfileDTO,saved);
+    }
     async delete(accountId: string){
         return await this.getRepository(Profile).softDelete({accountId});
     }

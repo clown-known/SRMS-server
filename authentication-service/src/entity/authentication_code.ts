@@ -20,4 +20,9 @@ export class AuthenticationCode{
     
     @ManyToOne(() => Account, account => account)
     account: Account;
+
+    @Column({
+        nullable:true
+    })
+    expiredTime: string
 }

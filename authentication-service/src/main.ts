@@ -20,7 +20,7 @@ async function bootstrap() {
     options: {
       package: 'permission',
       protoPath: path.join(__dirname, '..', 'src','proto', 'permission.proto'),
-      url: '127.0.0.1:5000',
+      url: '0.0.0.0:7000',
     },
   });
 

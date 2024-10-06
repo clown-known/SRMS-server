@@ -34,6 +34,7 @@ async save(createRouteDTO: CreateRouteDTO): Promise<CreateRouteDTO> {
   const route = new Route();
   route.name = createRouteDTO.name;
   route.description = createRouteDTO.description;
+  route.distance = createRouteDTO.distance;
   route.startPoint = startPoint;
   route.endPoint = endPoint;
 
@@ -79,20 +80,37 @@ async findAll(pageOptionsDto: PageOptionsDto): Promise<{ data: RouteDTO[]; meta:
   }
 
   async updateRoute(id: string, updateRouteDTO: UpdateRouteDTO): Promise<UpdateRouteDTO> {
-    const route = await this.findOne(id);
+    const route = await this.routeRepository.findOne({ where: { id } });
     if (!route) {
       throw new NotFoundException('Route not found');
     }
-        const errors = await validate(updateRouteDTO);
+  
+    const errors = await validate(updateRouteDTO);
     if (errors.length > 0) {
       throw new BadRequestException('Validation failed');
     }
-
+  
+    if (updateRouteDTO.startPointId) {
+      const startPoint = await this.pointRepository.findOne({ where: { id: updateRouteDTO.startPointId } });
+      if (!startPoint) {
+        throw new BadRequestException('Invalid startPoint ID');
+      }
+      route.startPoint = startPoint;
+    }
+  
+    if (updateRouteDTO.endPointId) {
+      const endPoint = await this.pointRepository.findOne({ where: { id: updateRouteDTO.endPointId } });
+      if (!endPoint) {
+        throw new BadRequestException('Invalid endPoint ID');
+      }
+      route.endPoint = endPoint;
+    }
+  
     Object.assign(route, updateRouteDTO);
     const updatedRoute = await this.routeRepository.save(route);
     return plainToInstance(UpdateRouteDTO, updatedRoute);
   }
-
+  
 
   async removeRoute(routeDTO: RouteDTO): Promise<void> {
     const route = await this.routeRepository.findOne({ where: { id: routeDTO.id } });

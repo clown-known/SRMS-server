@@ -12,6 +12,12 @@ export class RouteDTO{
     description: string;
 
     @Expose()
+    distance: number;
+
+    @Expose()
+    estimatedTime: number;
+
+    @Expose()
     startPoint: PointDTO;
 
     @Expose()

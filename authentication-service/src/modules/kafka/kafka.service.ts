@@ -4,7 +4,9 @@ import { SendMailDTO } from './mail.dto';
 
 @Injectable()
 export class KafkaService implements OnModuleInit {
-  constructor(@Inject('KAFKA_SERVICE') private readonly kafkaClient: ClientKafka) {}
+  constructor(
+    @Inject('KAFKA_SERVICE') private readonly kafkaClient: ClientKafka,
+  ) {}
 
   async onModuleInit() {
     await this.kafkaClient.connect();
@@ -15,7 +17,7 @@ export class KafkaService implements OnModuleInit {
       to: email,
       subject: 'Welcome to our website',
       emailTemplate: 'WELCOME',
-      context: { username }
+      context: { username },
     };
 
     try {
@@ -29,21 +31,55 @@ export class KafkaService implements OnModuleInit {
 
   async emitAuthenCode(email: string, authCode: string) {
     const sendMailDto: SendMailDTO = {
-        to: email,
-        subject: 'Your Authentication Code',
-        emailTemplate: 'PASSWORD_RESET',
-        context: {
-            authCode, 
-        },
+      to: email,
+      subject: 'Your Authentication Code',
+      emailTemplate: 'PASSWORD_RESET',
+      context: {
+        authCode,
+      },
     };
 
     try {
-        console.log(`Emitting auth code to Kafka for email: ${email}`);
-        await this.kafkaClient.emit('auth.authcode', sendMailDto);
-        console.log('Auth code email event emitted:', sendMailDto);
+      console.log(`Emitting auth code to Kafka for email: ${email}`);
+      await this.kafkaClient.emit('auth.authcode', sendMailDto);
+      console.log('Auth code email event emitted:', sendMailDto);
     } catch (error) {
-        console.error('Error emitting auth code email event:', error);
-        throw error;
+      console.error('Error emitting auth code email event:', error);
+      throw error;
     }
-}
+  }
+
+  async emitCreateAccount(email: string, username: string) {
+    const sendMailDto: SendMailDTO = {
+      to: email,
+      subject: 'Account Created Successfully',
+      emailTemplate: 'CREATE_ACCOUNT',
+      context: { username },
+    };
+
+    try {
+      await this.kafkaClient.emit('account.creation', sendMailDto);
+      console.log('Creation email event emitted:', sendMailDto);
+    } catch (error) {
+      console.error('Error emitting account creation email event:', error);
+      throw error;
+    }
+  }
+
+  async emitResetPasswordEmail(email: string, newPassword: string) {
+    const sendMailDto: SendMailDTO = {
+      to: email,
+      subject: 'Your Password Has Been Reset',
+      emailTemplate: 'ADMIN_PASSWORD',
+      context: { newPassword },
+    };
+
+    try {
+      await this.kafkaClient.emit('account.resetpassword', sendMailDto);
+      console.log('Password reset email event emitted:', sendMailDto);
+    } catch (error) {
+      console.error('Error emitting password reset email event:', error);
+      throw error;
+    }
+  }
 }

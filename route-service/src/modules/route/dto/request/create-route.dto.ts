@@ -1,5 +1,5 @@
 import { Expose } from 'class-transformer';
-import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString, IsUUID } from 'class-validator';
 
 export class CreateRouteDTO {
   @IsNotEmpty()
@@ -11,6 +11,16 @@ export class CreateRouteDTO {
   @IsString()
   @Expose()
   description: string;
+
+  @IsNotEmpty()
+  @IsNumber()
+  @Expose()
+  distance: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  @Expose()
+  estimatedTime: number;
 
   @IsNotEmpty()
   @IsUUID()

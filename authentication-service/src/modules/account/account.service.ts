@@ -44,7 +44,7 @@ export class AccountService {
     await this._profileService.haftUpdate(profile.id,{
       accountId: account.id
     } )
-    await this.kafkaService.emitRegisterEmail(data.email, data.firstName);
+    await this.kafkaService.emitCreateAccount(data.email, data.firstName);
 
     return transformToDTO( AccountDTO,await this.findByEmail(data.email));
   }
@@ -98,6 +98,8 @@ export class AccountService {
     this._accountRepository.update(id, { password: hashedPassword });
 
     // kafka
+    await this.kafkaService.emitResetPasswordEmail(account.email, newPass);
+
   }
 
   async getAllAccounts(pageOptionsDto: PageOptionsDto,) : Promise<PageDto<AccountDTO>>{

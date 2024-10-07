@@ -32,4 +32,31 @@ export class MailController {
             throw error;
         }
     }
+
+    @EventPattern('account.creation')
+    async sendCreateAccountMail(@Payload() sendMailDto: SendMailDTO) {
+        console.log('Received request to send mail:', sendMailDto);
+        try {
+            await this.mailService.sendMail(sendMailDto);
+            console.log('Email sent successfully');
+            return { message: 'Email sent successfully' };
+        } catch (error) {
+            console.error('Error sending email:', error);
+            throw error;
+        }
+    }
+
+    
+    @EventPattern('account.resetpassword')
+    async sendNewPassword(@Payload() sendMailDto: SendMailDTO) {
+        console.log('Received request to send mail:', sendMailDto);
+        try {
+            await this.mailService.sendMail(sendMailDto);
+            console.log('Email sent successfully');
+            return { message: 'Email sent successfully' };
+        } catch (error) {
+            console.error('Error sending email:', error);
+            throw error;
+        }
+    }
 }

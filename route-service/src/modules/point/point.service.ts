@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { plainToInstance } from "class-transformer";
 import { Point } from "../../entity";
-import { Like, Repository } from "typeorm";
+import { ILike, Repository } from "typeorm";
 import { CreatePointDTO } from "./dto/request/create-point.dto";
 import { PointDTO } from "./dto/point.dto";
 import { UpdatePointDTO } from "./dto/request/update-point.dto";
@@ -25,7 +25,7 @@ export class PointService {
     async findAll(pageOptionsDto: PageOptionsDto): Promise<{ data: PointDTO[]; meta: PageMetaDto }> { 
         const [points, itemCount] = await this.pointRepository.findAndCount({
             where: {
-                name: Like(`%${pageOptionsDto.searchKey}%`),
+                name: ILike(`%${pageOptionsDto.searchKey}%`),
             },
             take: pageOptionsDto.take,
             skip: pageOptionsDto.skip,

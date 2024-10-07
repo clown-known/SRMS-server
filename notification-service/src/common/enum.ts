@@ -1,5 +1,6 @@
 export enum EmailTemplate {
-    WELCOME = 'welcome-template',
-    PASSWORD_RESET = 'password-reset-template',
-    ACCOUNT_ACTIVATION = 'account-activation-template'
+    WELCOME = 'WELCOME',
+    PASSWORD_RESET = 'PASSWORD_RESET',
+    CREATE_ACCOUNT = 'CREATE_ACCOUNT',
+    ADMIN_PASSWORD = 'ADMIN_PASSWORD'
 }

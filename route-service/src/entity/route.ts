@@ -14,6 +14,12 @@ export class Route extends BaseEntity {
     @Column()
     description: string;
 
+    @Column({ nullable: true, type: "float"})
+    distance: number;
+
+    @Column({ nullable: true, type: "float" })
+    estimatedTime: number;
+
     @ManyToOne(() => Point, { nullable: false })
     @JoinColumn({ name: 'start_point_id' })
     startPoint: Point;

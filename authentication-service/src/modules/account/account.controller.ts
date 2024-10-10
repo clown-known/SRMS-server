@@ -22,16 +22,16 @@ export class AuthenticationController {
   createUser(@Body() req: CreateAccountRequest) : Promise<AccountDTO>{
     return this.accountService.createAccount(req);
   }
-  @Put(':id')
+  @Put('update/:id')
   updateUser( @Param('id') id: string,@Body() req: UpdateAccountRequest) : Promise<AccountDTO>{
     return this.accountService.updateAccount(id,req);
   }
 
-  @Get(':id')
-  findById(@Param('id') id: string){
-    return this.accountService.findById(id);
-  } 
-  @Get()
+  // @Get(':id')
+  // findById(@Param('id') id: string){
+  //   return this.accountService.findById(id);
+  // } 
+  @Put('reset-password')
   resetPassword(@Param('id') id: string){
     
   }

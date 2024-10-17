@@ -1,5 +1,6 @@
 import { Expose } from 'class-transformer';
 import { IsNotEmpty, IsNumber, IsString, IsUUID } from 'class-validator';
+import { PointDTO } from 'src/modules/point/dto/point.dto';
 
 export class CreateRouteDTO {
   @IsNotEmpty()
@@ -25,10 +26,10 @@ export class CreateRouteDTO {
   @IsNotEmpty()
   @IsUUID()
   @Expose()
-  startPointId: string;
+  startPointId: PointDTO;
 
   @IsNotEmpty()
   @IsUUID()
   @Expose()
-  endPointId: string;
+  endPointId: PointDTO;
 }

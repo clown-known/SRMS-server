@@ -14,7 +14,7 @@ export class CreatePointDTO {
 
   @IsNotEmpty()
   @IsString()
-  @IsIn(['port', 'dock', 'safe zone', 'restricted area', 'deep water', 'shallow water  ']) 
+  @IsIn(['port', 'dock', 'wharf', 'mooring buoy']) 
   @Expose()
   type: string;
 

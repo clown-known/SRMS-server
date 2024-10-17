@@ -9,7 +9,7 @@ import { Point, Route } from "src/entity";
 import { validate } from "class-validator";
 import { PageOptionsDto } from "src/common/pagination/page-option.dto";
 import { PageMetaDto } from "src/common/pagination/page-meta.dto";
-import { Like } from "typeorm";
+import { ILike, Like } from "typeorm";
 import { PointRepository } from "../point/point.repository";
 
 
@@ -23,8 +23,8 @@ export class RouteService {
 ) {}
 
 async save(createRouteDTO: CreateRouteDTO): Promise<CreateRouteDTO> {
-  const startPoint = await this.pointRepository.findOne({ where: { id: createRouteDTO.startPointId } });
-  const endPoint = await this.pointRepository.findOne({ where: { id: createRouteDTO.endPointId } });
+  const startPoint = await this.pointRepository.findOne({ where: { id: createRouteDTO.startPointId.id } });
+  const endPoint = await this.pointRepository.findOne({ where: { id: createRouteDTO.endPointId.id } });
   if (!startPoint) {
     throw new BadRequestException('Invalid startPoint ID');
   }
@@ -47,8 +47,10 @@ async findAll(pageOptionsDto: PageOptionsDto): Promise<{ data: RouteDTO[]; meta:
   const [routes, itemCount] = await this.routeRepository.findAndCount({
     relations: ['startPoint', 'endPoint'],
     where: [
-      { name: Like(`%${pageOptionsDto.searchKey}%`) },
-      { description: Like(`%${pageOptionsDto.searchKey}%`) },
+      { name: ILike(`%${pageOptionsDto.searchKey}%`) },
+      // { description: Like(`%${pageOptionsDto.searchKey}%`) },
+      { startPoint: { name: ILike(`%${pageOptionsDto.searchKey}%`) } },
+      { endPoint: { name: ILike(`%${pageOptionsDto.searchKey}%`) } },
     ],
     take: pageOptionsDto.take,
     skip: pageOptionsDto.skip,
@@ -91,7 +93,7 @@ async findAll(pageOptionsDto: PageOptionsDto): Promise<{ data: RouteDTO[]; meta:
     }
   
     if (updateRouteDTO.startPointId) {
-      const startPoint = await this.pointRepository.findOne({ where: { id: updateRouteDTO.startPointId } });
+      const startPoint = await this.pointRepository.findOne({ where: { id: updateRouteDTO.startPointId.id } });
       if (!startPoint) {
         throw new BadRequestException('Invalid startPoint ID');
       }
@@ -99,7 +101,7 @@ async findAll(pageOptionsDto: PageOptionsDto): Promise<{ data: RouteDTO[]; meta:
     }
   
     if (updateRouteDTO.endPointId) {
-      const endPoint = await this.pointRepository.findOne({ where: { id: updateRouteDTO.endPointId } });
+      const endPoint = await this.pointRepository.findOne({ where: { id: updateRouteDTO.endPointId.id } });
       if (!endPoint) {
         throw new BadRequestException('Invalid endPoint ID');
       }

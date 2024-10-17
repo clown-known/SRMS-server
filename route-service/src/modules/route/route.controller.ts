@@ -6,9 +6,9 @@ import { RouteDTO } from "./dto/route.dto";
 import { PageOptionsDto } from "src/common/pagination/page-option.dto";
 import { PageDto } from "src/common/pagination/page.dto";
 import { validate } from "class-validator";
-// import { PermissionsGuard } from "src/guards/permission.guard";
-// import { Actions, Modules } from "src/common/enum";
-// import { Permissions } from "src/decorator/permission.decorator";
+import { PermissionsGuard } from "src/guards/permission.guard";
+import { Actions, Modules } from "src/common/enum";
+import { Permissions } from "src/decorator/permission.decorator";
 
 @Controller('routes')
 export class RouteController {
@@ -28,20 +28,15 @@ export class RouteController {
     }
 
     @Get()
-    // @UseGuards(PermissionsGuard)
-    // @Permissions([
-    //     {module: Modules.ROUTE, action: Actions.GET_ALL},
-    // ])
+    @UseGuards(PermissionsGuard)
+    @Permissions([
+        {module: Modules.ROUTE, action: Actions.READ},
+    ])
     async findAll(@Query() pageOptionsDto: PageOptionsDto): Promise<PageDto<RouteDTO>> {
         return this.routeService.findAll(pageOptionsDto);
     }
 
     @Get(':id')
-    // @UseGuards(PermissionsGuard)
-    // @Permissions([
-    //     {module: Modules.ROUTE, action: Actions.GET_ALL},
-    //     {module: Modules.ROUTE, action: Actions.GET},
-    // ])
     async findOne(@Param('id') id: string): Promise<RouteDTO> {
         return this.routeService.findOne(id); 
     }

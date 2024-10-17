@@ -5,7 +5,7 @@ const grpcOptions : ClientOptions = {
         options: {
             package: 'permission',
             protoPath: './src/proto/permission.proto',
-            url: 'grpc-server:7000',
+            url: 'authentication-service:7000',
         },
 }
 export default grpcOptions

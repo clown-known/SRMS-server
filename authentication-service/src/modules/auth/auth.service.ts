@@ -56,7 +56,8 @@ export class AuthService{
             })
             return {
                 name: account.profile.firstName + ' ' + account.profile.lastName,
-                permissions: p
+                permissions: p,
+                roleId: account.roleId
             };
         }
         throw new UnauthorizedException('Invalid email or password');

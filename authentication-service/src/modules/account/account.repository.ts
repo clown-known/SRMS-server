@@ -21,7 +21,7 @@ export class AccountRepository extends BaseRepository{
     }
     async findWithOption(pageOptionsDto: PageOptionsDto,) : Promise<[AccountDTO[],itemCount: number]>{
         const order: FindOptionsOrder<Account> = {
-            ...(pageOptionsDto.orderBy? { [pageOptionsDto.orderBy]: pageOptionsDto.order } : {}),
+            ...(pageOptionsDto.orderBy? { [pageOptionsDto.orderBy]: pageOptionsDto.order } : {roleId:"ASC",email:"ASC"}),
         }       
         const value = await this.getRepository(Account).find({
             relations: ['profile','role'],
@@ -32,13 +32,20 @@ export class AccountRepository extends BaseRepository{
                 email : Like('%'+pageOptionsDto.searchKey+'%')
             }
         });
-        const queryBuilder = this.getRepository(Account).createQueryBuilder("account")
-        queryBuilder
-            .orderBy(pageOptionsDto.orderBy? { [pageOptionsDto.orderBy]: pageOptionsDto.order } : {})
-            .skip(pageOptionsDto.skip)
-            .take(pageOptionsDto.take);
+        const value2 = await this.getRepository(Account).find({
+            relations: ['profile','role'],
+            where:{
+                email : Like('%'+pageOptionsDto.searchKey+'%')
+            }
+        });
+        // const queryBuilder = this.getRepository(Account).createQueryBuilder("account")
+        // queryBuilder
+        //     .orderBy(pageOptionsDto.orderBy? { [pageOptionsDto.orderBy]: pageOptionsDto.order } : {})
+        //     .skip(pageOptionsDto.skip)
+        //     .take(pageOptionsDto.take);
 
-        const itemCount = await queryBuilder.getCount();
+        // const itemCount = await queryBuilder.getCount();
+        const itemCount =  value2.length;
         return [transformToDTO(AccountDTO,value),itemCount];
     }
     async findByEmail(email: string): Promise<AccountDTO | null> {

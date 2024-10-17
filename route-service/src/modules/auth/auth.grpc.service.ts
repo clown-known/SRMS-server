@@ -20,6 +20,7 @@ export class AuthGrpcService implements OnModuleInit {
 
     async getPermissionsOfUser(userId: string) {
         const response = await firstValueFrom(this.permissionService.GetPermission({userId}));
+        console.log(response)
         return response; 
     }
 }

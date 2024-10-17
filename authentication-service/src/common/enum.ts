@@ -1,7 +1,8 @@
 export enum Modules {
   ACCOUNT = 'account',
   ROLE = 'role',
-  ROUTE = 'route'
+  ROUTE = 'route',
+  POINT = 'point'
 }
 export enum Actions {
   CREATE = 'create',
@@ -9,9 +10,9 @@ export enum Actions {
   UPDATE_RELATED = 'update_related',
   DELETE = 'delete',
   DELETE_RELATED = 'delete_related',
-  GET = 'get',
-  GET_ALL = 'read',
-  GET_RELATED = 'get_related',
+  READ = 'read',
+  PASSWORD_RESET = 'reset-password',
+  ASSIGN_ROLE = 'assign-role'
 }
 export enum Order {
   ASC = "ASC",

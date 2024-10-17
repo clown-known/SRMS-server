@@ -22,24 +22,28 @@ export class AuthenticationController {
   createUser(@Body() req: CreateAccountRequest) : Promise<AccountDTO>{
     return this.accountService.createAccount(req);
   }
-  @Put(':id')
+  @Put('update/:id')
   updateUser( @Param('id') id: string,@Body() req: UpdateAccountRequest) : Promise<AccountDTO>{
     return this.accountService.updateAccount(id,req);
   }
-
-  @Get(':id')
-  findById(@Param('id') id: string){
-    return this.accountService.findById(id);
-  } 
-  @Get()
-  resetPassword(@Param('id') id: string){
-    
+  @Put('update-with-role/:id')
+  updateUserWithRole( @Param('id') id: string,@Body() req: UpdateAccountRequest) : Promise<AccountDTO>{
+    return this.accountService.updateAccountWithRole(id,req);
   }
-  @Put('changePassword/:id')
+  // @Get(':id')
+  // findById(@Param('id') id: string){
+  //   return this.accountService.findById(id);
+  // } 
+  @Put('reset-password/:id')
+  resetPassword(@Param('id') id: string){
+    console.log()
+    return this.accountService.resetPassword(id);
+  }
+  @Put('changePassword')
   @UseGuards(JWTAuthGuard)
-  changePassword(@Req() req, @Param('id') id: string,@Body() data: ChangePasswordRequest){
-    if(req.user.id != id) throw new UnauthorizedException('Token is not valid for this user!');
-    return this.accountService.changePassword(id,data);
+  changePassword(@Req() req,@Body() data: ChangePasswordRequest){
+    console.log(data)
+    return this.accountService.changePassword(req.user.id,data);
   }
 
   @Get()
@@ -59,5 +63,9 @@ export class AuthenticationController {
   @Put('assign')
   assignRoleToUser(@Body() data: AssignRoleToUserRequest){
     return this.accountService.assignRole(data.userId,data.roleId);
+  }
+  @Put('unassign/:id')
+  unAssignRoleOfUser(@Param('id') id: string){
+    return this.accountService.haftUpdate(id,{roleId:null,role:null});
   }
 }

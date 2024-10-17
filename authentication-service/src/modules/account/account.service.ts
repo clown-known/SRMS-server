@@ -54,17 +54,12 @@ export class AccountService {
     return transformToDTO(AccountDTO, await this.findByEmail(data.email));
   }
 
-  async updateAccount(
-    id: string,
-    data: UpdateAccountRequest,
-  ): Promise<AccountDTO> {
-    const account = await this._accountRepository.findOne(id);
-    if (account == null) throw new BadRequestException('email doesnot exist!');
-    if (
-      data.roleId != null &&
-      (await this._roleService.getById(data.roleId)) == null
-    )
-      throw new BadRequestException('role doesnot exist!');
+
+  async updateAccountWithRole(id: string, data: UpdateAccountRequest): Promise<AccountDTO>{
+    const account = await this._accountRepository.findOne(id)
+    if(account == null) throw new BadRequestException('email doesnot exist!');
+    if(data.roleId == null || data.roleId == '' && account.roleId != null) this._accountRepository.halfUpdate(id,{role:null,roleId:null})
+    if(data.roleId != null && await this._roleService.getById(data.roleId)==null) throw new BadRequestException('role doesnot exist!');
     // const hashedPassword = await hash(data.password);
     const profile = await this._profileService.haftUpdate(account.profileId, {
       firstName: data.firstName,
@@ -82,7 +77,25 @@ export class AccountService {
     });
     // await this.kafkaService.emitRegisterEmail(data.email, data.firstName);
 
-    return transformToDTO(AccountDTO, await this.findByEmail(data.email));
+    return transformToDTO( AccountDTO,await this.findByEmail(data.email));
+  }
+  async updateAccount(id: string, data: UpdateAccountRequest): Promise<AccountDTO>{
+    const account = await this._accountRepository.findOne(id)
+    if(account==null) throw new BadRequestException('email doesnot exist!');
+    // const hashedPassword = await hash(data.password);
+    const profile = await this._profileService.haftUpdate(account.profileId,{
+      firstName: data.firstName,
+      lastName: data.lastName,
+      dateOfBirth: data.dateOfBirth,
+      address: data.address,
+      phoneNumber: data.phoneNumber
+    });
+    const result = await this._accountRepository.update(id,{
+      email:data.email, 
+      profile:profile,
+    });
+    // await this.kafkaService.emitRegisterEmail(data.email, data.firstName);
+    return transformToDTO( AccountDTO,await this.findByEmail(data.email));
   }
 
   async findByEmail(email: string): Promise<AccountDTO | null> {
@@ -93,7 +106,8 @@ export class AccountService {
   }
   async changePassword(id: string, data: ChangePasswordRequest) {
     const account = await this._accountRepository.findOne(id);
-    if (account) throw new BadRequestException('Account was not found!');
+
+    if(!account) throw new BadRequestException('Account was not found!');
     if (!(await compare(data.oldPassword, account.password))) {
       throw new BadRequestException('old password is not match!');
     }
@@ -103,7 +117,8 @@ export class AccountService {
 
   async resetPassword(id: string) {
     const account = await this._accountRepository.findOne(id);
-    if (account) throw new BadRequestException('Account was not found!');
+
+    if(!account) throw new BadRequestException('Account was not found!');
     const newPass = this.makePass(7);
     const hashedPassword = await hash(newPass);
     this._accountRepository.update(id, { password: hashedPassword });
@@ -139,8 +154,9 @@ export class AccountService {
   public async assignRole(id: string, roleId: string) {
     const role = await this._roleService.getById(roleId);
     const account = await this._accountRepository.findOne(id);
-    if (role || account) throw new BadRequestException('role does not exist!');
-    return this._accountRepository.update(id, { roleId: role.id, role: role });
+
+    if(!role||!account) throw new BadRequestException('role does not exist!');
+    return this._accountRepository.update(id,{roleId: role.id,role:role})
   }
   makePass(length) {
     let result = '';

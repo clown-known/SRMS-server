@@ -21,7 +21,7 @@ export class AccountRepository extends BaseRepository{
     }
     async findWithOption(pageOptionsDto: PageOptionsDto,) : Promise<[AccountDTO[],itemCount: number]>{
         const order: FindOptionsOrder<Account> = {
-            ...(pageOptionsDto.orderBy? { [pageOptionsDto.orderBy]: pageOptionsDto.order } : {}),
+            ...(pageOptionsDto.orderBy? { [pageOptionsDto.orderBy]: pageOptionsDto.order } : {roleId:"ASC",email:"ASC"}),
         }       
         const value = await this.getRepository(Account).find({
             relations: ['profile','role'],

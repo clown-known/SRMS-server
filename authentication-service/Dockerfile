@@ -34,8 +34,8 @@ COPY --from=builder /app/src/proto/permission.proto ./src/proto/
 # Install only production dependencies
 RUN npm install --production
 
-# Expose the application port
-EXPOSE 3001
+# Expose both the HTTP and gRPC ports
+EXPOSE 3001 7000
 
 # Command to run the application
 CMD ["node", "dist/main"]

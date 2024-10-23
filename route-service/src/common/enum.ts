@@ -12,7 +12,7 @@ export enum Actions {
     UPDATE_RELATED = 'update_related',
     DELETE = 'delete',
     DELETE_RELATED = 'delete_related',
-    GET = 'get',
+    READ = 'read',
     GET_ALL = 'get_all',
     GET_RELATED = 'get_related',
   }

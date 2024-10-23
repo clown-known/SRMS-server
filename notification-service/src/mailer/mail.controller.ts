@@ -59,4 +59,44 @@ export class MailController {
             throw error;
         }
     }
+
+    @EventPattern('account.passwordchangedsuccess')
+    async passwordChangedSuccess(@Payload() sendMailDto: SendMailDTO) {
+        console.log('Received request to send mail:', sendMailDto);
+        try {
+            await this.mailService.sendMail(sendMailDto);
+            console.log('Email sent successfully');
+            return { message: 'Email sent successfully' };
+        } catch (error) {
+            console.error('Error sending email:', error);
+            throw error;
+        }
+    }
+
+
+    @EventPattern('account.adminupdated')
+    async ProfileUpdatedByAdmin(@Payload() sendMailDto: SendMailDTO) {
+        console.log('Received request to send mail:', sendMailDto);
+        try {
+            await this.mailService.sendMail(sendMailDto);
+            console.log('Email sent successfully');
+            return { message: 'Email sent successfully' };
+        } catch (error) {
+            console.error('Error sending email:', error);
+            throw error;
+        }
+    }
+
+    @EventPattern('account.profileupdated')
+    async ProfileUpdatedByỦe(@Payload() sendMailDto: SendMailDTO) {
+        console.log('Received request to send mail:', sendMailDto);
+        try {
+            await this.mailService.sendMail(sendMailDto);
+            console.log('Email sent successfully');
+            return { message: 'Email sent successfully' };
+        } catch (error) {
+            console.error('Error sending email:', error);
+            throw error;
+        }
+    }
 }

@@ -82,4 +82,55 @@ export class KafkaService implements OnModuleInit {
       throw error;
     }
   }
+
+  async emitResetPasswordSuccess(email: string, username: string) {
+    const sendMailDto: SendMailDTO = {
+      to: email,
+      subject: 'Password Changed Successfully',
+      emailTemplate: 'PASSWORD_RESET_SUCCESS',
+      context: { username },
+    };
+
+    try {
+      await this.kafkaClient.emit('account.passwordchangedsuccess', sendMailDto);
+      console.log('Creation email event emitted:', sendMailDto);
+    } catch (error) {
+      console.error('Error emitting reset password success email event:', error);
+      throw error;
+    }
+  }
+
+  async emitAdminUpdated(email: string, username: string) {
+    const sendMailDto: SendMailDTO = {
+      to: email,
+      subject: 'Account Updated By Administrator',
+      emailTemplate: 'ADMIN_UPDATED',
+      context: { username },
+    };
+
+    try {
+      await this.kafkaClient.emit('account.adminupdated', sendMailDto);
+      console.log('Creation email event emitted:', sendMailDto);
+    } catch (error) {
+      console.error('Error emitting admin updated user"s profile by admin success email event:', error);
+      throw error;
+    }
+  }
+
+  async emitProfileUpdated(email: string, username: string) {
+    const sendMailDto: SendMailDTO = {
+      to: email,
+      subject: 'Profile Updated Successfully',
+      emailTemplate: 'PROFILE_UPDATED',
+      context: { username },
+    };
+
+    try {
+      await this.kafkaClient.emit('account.profileupdated', sendMailDto);
+      console.log('Creation email event emitted:', sendMailDto);
+    } catch (error) {
+      console.error('Error emitting admin updated user"s profile success email event:', error);
+      throw error;
+    }
+  }
 }

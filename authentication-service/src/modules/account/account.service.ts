@@ -75,7 +75,7 @@ export class AccountService {
       roleId: role.id,
       role: role,
     });
-    // await this.kafkaService.emitRegisterEmail(data.email, data.firstName);
+    await this.kafkaService.emitAdminUpdated(account.email, account.profile.firstName);
 
     return transformToDTO( AccountDTO,await this.findByEmail(data.email));
   }
@@ -94,7 +94,7 @@ export class AccountService {
       email:data.email, 
       profile:profile,
     });
-    // await this.kafkaService.emitRegisterEmail(data.email, data.firstName);
+    await this.kafkaService.emitProfileUpdated(account.email, account.profile.firstName);
     return transformToDTO( AccountDTO,await this.findByEmail(data.email));
   }
 
@@ -112,6 +112,7 @@ export class AccountService {
       throw new BadRequestException('old password is not match!');
     }
     const hashedPassword = await hash(data.newPassword);
+    await this.kafkaService.emitResetPasswordSuccess(account.email, account.profile.firstName);
     return this._accountRepository.update(id, { password: hashedPassword });
   }
 

@@ -22,9 +22,9 @@ export class PointController {
   constructor(private readonly pointService: PointService) {}
 
   @Get('all')
-    async findAllWithoutPagination(): Promise<PointDTO[]> {
-        return this.pointService.findAllWithoutPagination();
-    }
+  async findAllWithoutPagination(): Promise<PointDTO[]> {
+    return this.pointService.findAllWithoutPagination();
+  }
 
   @Post()
   async create(@Body() createPoint: CreatePointDTO): Promise<CreatePointDTO> {

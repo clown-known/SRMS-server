@@ -15,10 +15,10 @@ export class RouteController {
     constructor(private readonly routeService: RouteService) {}
 
     @Post()
-    // @UseGuards(PermissionsGuard)
-    // @Permissions([
-    //     {module: Modules.ROUTE, action: Actions.CREATE},
-    // ])
+    @UseGuards(PermissionsGuard)
+    @Permissions([
+        {module: Modules.ROUTE, action: Actions.CREATE},
+    ])
     async create(@Body() createRouteDTO: CreateRouteDTO): Promise<CreateRouteDTO> {
         const errors = await validate(createRouteDTO);
         if (errors.length > 0) {
@@ -28,33 +28,33 @@ export class RouteController {
     }
 
     @Get()
-    @UseGuards(PermissionsGuard)
-    @Permissions([
-        {module: Modules.ROUTE, action: Actions.READ},
-    ])
     async findAll(@Query() pageOptionsDto: PageOptionsDto): Promise<PageDto<RouteDTO>> {
         return this.routeService.findAll(pageOptionsDto);
     }
 
     @Get(':id')
+    @UseGuards(PermissionsGuard)
+    @Permissions([
+        {module: Modules.ROUTE, action: Actions.READ},
+    ])
     async findOne(@Param('id') id: string): Promise<RouteDTO> {
         return this.routeService.findOne(id); 
     }
 
     @Patch(':id')
-    // @UseGuards(PermissionsGuard)
-    // @Permissions([
-    //     {module: Modules.ROUTE, action: Actions.UPDATE},
-    // ])
+    @UseGuards(PermissionsGuard)
+    @Permissions([
+        {module: Modules.ROUTE, action: Actions.UPDATE},
+    ])
     async update(@Param('id') id: string, @Body() updateRouteDTO: UpdateRouteDTO): Promise<UpdateRouteDTO> {
         return this.routeService.updateRoute(id, updateRouteDTO);
     }
 
     @Delete(':id')
-    // @UseGuards(PermissionsGuard)
-    // @Permissions([
-    //     {module: Modules.ROUTE, action: Actions.DELETE},
-    // ])
+    @UseGuards(PermissionsGuard)
+    @Permissions([
+        {module: Modules.ROUTE, action: Actions.DELETE},
+    ])
     async remove(@Param('id') id: string): Promise<void> {
         const routeDTO = new RouteDTO();
         routeDTO.id = id;

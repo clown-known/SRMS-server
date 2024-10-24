@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { PointService } from './point.service';
 import { plainToInstance } from 'class-transformer';
@@ -15,7 +16,9 @@ import { UpdatePointDTO } from './dto/request/update-point.dto';
 import { PageOptionsDto } from 'src/common/pagination/page-option.dto';
 import { PageDto } from 'src/common/pagination/page.dto';
 import { PointDTO } from './dto/point.dto';
-import { PageMetaDto } from 'src/common/pagination/page-meta.dto';
+import { PermissionsGuard } from 'src/guards/permission.guard';
+import { Actions, Modules } from 'src/common/enum';
+import { Permissions } from 'src/decorator/permission.decorator';
 
 @Controller('points')
 export class PointController {
@@ -27,6 +30,10 @@ export class PointController {
   }
 
   @Post()
+  @UseGuards(PermissionsGuard)
+  @Permissions([
+      {module: Modules.ROUTE, action: Actions.CREATE},
+  ])
   async create(@Body() createPoint: CreatePointDTO): Promise<CreatePointDTO> {
     return this.pointService.save(createPoint);
   }
@@ -45,6 +52,10 @@ export class PointController {
   }
 
   @Patch(':id')
+  @UseGuards(PermissionsGuard)
+  @Permissions([
+      {module: Modules.ROUTE, action: Actions.UPDATE},
+  ])
   async update(
     @Param('id') id: string,
     @Body() updatePoint: UpdatePointDTO,
@@ -54,6 +65,10 @@ export class PointController {
   }
 
   @Delete(':id')
+  @UseGuards(PermissionsGuard)
+  @Permissions([
+      {module: Modules.ROUTE, action: Actions.DELETE},
+  ])
   async remove(@Param('id') id: string): Promise<void> {
     return this.pointService.removePoint(id);
   }

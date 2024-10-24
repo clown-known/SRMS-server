@@ -14,7 +14,6 @@ export class ProfileController {
     @Get()
     @UseGuards(JWTAuthGuard)
     getProfile(@Req() req){
-        console.log(req.user)
         return this.profileService.getProfile(req.user.id);
     }
     @Get('all')

@@ -23,10 +23,12 @@ export class AuthenticationController {
     return this.accountService.createAccount(req);
   }
   @Put('update/:id')
+  @UseInterceptors(TransactionInterceptor)
   updateUser( @Param('id') id: string,@Body() req: UpdateAccountRequest) : Promise<AccountDTO>{
     return this.accountService.updateAccount(id,req);
   }
   @Put('update-with-role/:id')
+  @UseInterceptors(TransactionInterceptor)
   updateUserWithRole( @Param('id') id: string,@Body() req: UpdateAccountRequest) : Promise<AccountDTO>{
     return this.accountService.updateAccountWithRole(id,req);
   }

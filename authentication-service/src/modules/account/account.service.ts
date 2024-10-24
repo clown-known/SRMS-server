@@ -57,8 +57,9 @@ export class AccountService {
 
   async updateAccountWithRole(id: string, data: UpdateAccountRequest): Promise<AccountDTO>{
     const account = await this._accountRepository.findOne(id)
+    console.log(data)
     if(account == null) throw new BadRequestException('email doesnot exist!');
-    if(data.roleId == null || data.roleId == '' && account.roleId != null) this._accountRepository.halfUpdate(id,{role:null,roleId:null})
+    if((data.roleId == null || data.roleId == '' )&& account.roleId != null) this._accountRepository.halfUpdate(id,{role:null,roleId:null})
     if(data.roleId != null && await this._roleService.getById(data.roleId)==null) throw new BadRequestException('role doesnot exist!');
     // const hashedPassword = await hash(data.password);
     const profile = await this._profileService.haftUpdate(account.profileId, {
@@ -69,12 +70,16 @@ export class AccountService {
       phoneNumber: data.phoneNumber,
     });
     const role = await this._roleService.getById(data.roleId);
-    const result = await this._accountRepository.update(id, {
+    console.log('role: '+role)
+    if(!role) throw new BadRequestException('role does not exist!');
+    console.log(role.name)
+    const re = await this._accountRepository.halfUpdate(id, {
       email: data.email,
-      profile: profile,
       roleId: role.id,
       role: role,
     });
+    console.log(re)
+    
     await this.kafkaService.emitAdminUpdated(account.email, account.profile.firstName);
 
     return transformToDTO( AccountDTO,await this.findByEmail(data.email));

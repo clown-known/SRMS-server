@@ -14,8 +14,4 @@ export class RolePermissions {
     @ManyToOne(() => Permission, permission => permission.rolePermissions)
     @JoinColumn({ name: "permission_id" })
     permission: Permission;
-    @BeforeRemove()
-    updateStatus() {
-        console.log("id removed: "+this.id)
-    }
 }

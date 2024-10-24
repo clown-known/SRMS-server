@@ -56,21 +56,21 @@ export class PermissionsGuard implements CanActivate {
     // map permission to partern
     // check permission is in required list or not
     const hasPermission = (userPermissions) => {
-        console.log('user per: ' + userPermissions);
-        console.log(`req per: ${requiredPermissions.map(p => `${p.module}:${p.action}`).join(', ')}`);
+        // console.log('user per: ' + userPermissions);
+        // console.log(`req per: ${requiredPermissions.map(p => `${p.module}:${p.action}`).join(', ')}`);
         if (!userPermissions) return false;
 
         const permissionKeys = userPermissions.map(
             (permissionk) => `${permissionk.module}:${permissionk.action}`,
         );
 
-        console.log('permissionKeys:', permissionKeys); // Debug log
+        // console.log('permissionKeys:', permissionKeys); // Debug log
 
         const hasAccess = requiredPermissions.some((requiredPermission) =>
             permissionKeys.includes(`${requiredPermission.module}:${requiredPermission.action}`)
         );
 
-        console.log('hasAccess:', hasAccess); // Debug log
+        // console.log('hasAccess:', hasAccess); // Debug log
         return hasAccess;
     };
     if(hasPermission((await getUserPermissions()))) return true;

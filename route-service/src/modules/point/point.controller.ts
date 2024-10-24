@@ -45,7 +45,7 @@ export class PointController {
     return this.pointService.findAll(pageOptionsDto);
   }
 
-  @Get(':id')
+  @Get('get-by-id/:id')
   async findOne(@Param('id') id: string): Promise<CreatePointDTO> {
     const point = await this.pointService.findOne(id);
     return plainToInstance(CreatePointDTO, point);

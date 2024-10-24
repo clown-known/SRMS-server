@@ -12,6 +12,9 @@ export class Roles extends BaseEntity{
     @Column()
     name: string;
 
+    @Column({nullable:true})
+    isAdmin?: boolean;
+
     @OneToMany(() => RolePermissions, rolePermission => rolePermission.role)
     rolePermissions: RolePermissions[];
 

@@ -7,6 +7,8 @@ export class RoleDTO{
     @Expose()
     name: string;
     @Expose()
+    isAdmin?: boolean;
+    @Expose()
     @Type(()=>PermissionInRoleDTO)
     permissionsInRole?: PermissionInRoleDTO[]
 }

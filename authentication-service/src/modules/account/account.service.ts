@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { Account } from 'src/entity/account';
 import { compare } from 'bcrypt';
 import { hash } from '../../common/security';
@@ -15,6 +15,7 @@ import { RoleService } from '../role/role.service';
 import { KafkaService } from '../kafka/kafka.service';
 import { transformToDTO } from 'src/common/transform.util';
 import { UpdateAccountRequest } from './dto/request';
+import { UpdateAccountWithoutRoleRequest } from './dto/request/account-update-without-role-request';
 
 @Injectable()
 export class AccountService {
@@ -57,8 +58,7 @@ export class AccountService {
 
   async updateAccountWithRole(id: string, data: UpdateAccountRequest): Promise<AccountDTO>{
     const account = await this._accountRepository.findOne(id)
-    console.log(data)
-    if(account == null) throw new BadRequestException('email doesnot exist!');
+    if(account == null) throw new BadRequestException('email does not exist!');
     if((data.roleId == null || data.roleId == '' )&& account.roleId != null) this._accountRepository.halfUpdate(id,{role:null,roleId:null})
     if(data.roleId != null && await this._roleService.getById(data.roleId)==null) throw new BadRequestException('role doesnot exist!');
     // const hashedPassword = await hash(data.password);
@@ -70,34 +70,30 @@ export class AccountService {
       phoneNumber: data.phoneNumber,
     });
     const role = await this._roleService.getById(data.roleId);
-    console.log('role: '+role)
     if(!role) throw new BadRequestException('role does not exist!');
-    console.log(role.name)
     const re = await this._accountRepository.halfUpdate(id, {
       email: data.email,
       roleId: role.id,
       role: role,
     });
-    console.log(re)
     
     await this.kafkaService.emitAdminUpdated(account.email, account.profile.firstName);
 
     return transformToDTO( AccountDTO,await this.findByEmail(data.email));
   }
-  async updateAccount(id: string, data: UpdateAccountRequest): Promise<AccountDTO>{
+  async updateAccount(id: string, data: UpdateAccountWithoutRoleRequest): Promise<AccountDTO>{
     const account = await this._accountRepository.findOne(id)
-    if(account==null) throw new BadRequestException('email doesnot exist!');
+    if(account == null) throw new BadRequestException('email does not exist!');
     // const hashedPassword = await hash(data.password);
-    const profile = await this._profileService.haftUpdate(account.profileId,{
+    const profile = await this._profileService.haftUpdate(account.profileId, {
       firstName: data.firstName,
       lastName: data.lastName,
       dateOfBirth: data.dateOfBirth,
       address: data.address,
-      phoneNumber: data.phoneNumber
+      phoneNumber: data.phoneNumber,
     });
-    const result = await this._accountRepository.update(id,{
-      email:data.email, 
-      profile:profile,
+    const re = await this._accountRepository.halfUpdate(id, {
+      email: data.email,
     });
     await this.kafkaService.emitProfileUpdated(account.email, account.profile.firstName);
     return transformToDTO( AccountDTO,await this.findByEmail(data.email));
@@ -154,7 +150,7 @@ export class AccountService {
   public async softDelete(id: string) {
     const entity = await this._accountRepository.findOne(id);
     await this._profileService.deleteProfile(entity.profileId),
-      await this._accountRepository.delete(id);
+    await this._accountRepository.delete(id);
   }
 
   public async assignRole(id: string, roleId: string) {

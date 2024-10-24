@@ -12,6 +12,7 @@ import { PageDto } from 'src/common/pagination/page.dto';
 import { TransactionInterceptor } from 'src/common/transaction.interceptor';
 import { AssignRoleToUserRequest } from './dto/request/assign-role-to-user-request.dto';
 import { UpdateAccountRequest } from './dto/request';
+import { UpdateAccountWithoutRoleRequest } from './dto/request/account-update-without-role-request';
 
 @Controller('account')
 
@@ -24,7 +25,8 @@ export class AuthenticationController {
   }
   @Put('update/:id')
   @UseInterceptors(TransactionInterceptor)
-  updateUser( @Param('id') id: string,@Body() req: UpdateAccountRequest) : Promise<AccountDTO>{
+  updateUser( @Param('id') id: string,@Body() req: UpdateAccountWithoutRoleRequest) : Promise<AccountDTO>{
+    console.log(req)
     return this.accountService.updateAccount(id,req);
   }
   @Put('update-with-role/:id')
@@ -37,6 +39,10 @@ export class AuthenticationController {
   //   return this.accountService.findById(id);
   // } 
   @Put('reset-password/:id')
+  @UseGuards(PermissionsGuard)
+  @Permissions([
+    {module: Modules.ACCOUNT, action: Actions.PASSWORD_RESET},
+  ])
   resetPassword(@Param('id') id: string){
     console.log()
     return this.accountService.resetPassword(id);
@@ -63,10 +69,18 @@ export class AuthenticationController {
     return this.accountService.softDelete(id);
   }
   @Put('assign')
+  @UseGuards(PermissionsGuard)
+  @Permissions([
+    {module: Modules.ACCOUNT, action: Actions.ASSIGN_ROLE},
+  ])
   assignRoleToUser(@Body() data: AssignRoleToUserRequest){
     return this.accountService.assignRole(data.userId,data.roleId);
   }
   @Put('unassign/:id')
+  @UseGuards(PermissionsGuard)
+  @Permissions([
+    {module: Modules.ACCOUNT, action: Actions.ASSIGN_ROLE},
+  ])
   unAssignRoleOfUser(@Param('id') id: string){
     return this.accountService.haftUpdate(id,{roleId:null,role:null});
   }

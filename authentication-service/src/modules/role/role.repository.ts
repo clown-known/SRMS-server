@@ -1,5 +1,5 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { DataSource, DeepPartial, FindOptionsOrder, Like, Repository } from "typeorm";
+import { DataSource, DeepPartial, FindOptionsOrder, In, Like, Repository } from "typeorm";
 import { BaseRepository } from "src/common/base-repository";
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
@@ -23,7 +23,8 @@ export class RoleRepository extends BaseRepository {
             take: pageOptionsDto.take,
             skip: pageOptionsDto.skip,
             where:{
-                name : Like('%'+pageOptionsDto.searchKey+'%')
+                name : Like('%'+pageOptionsDto.searchKey+'%'),
+                isAdmin: false
             }
         });
         const itemCount = (await this.getRepository(Roles).find({

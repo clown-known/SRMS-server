@@ -127,7 +127,9 @@ export class AuthService{
     async resetPassword(accountId: string, newPassword: string, code: string){
         const hashedPassword = await hash(newPassword)
         if(await this._authRepository.useAuthenCode(code,accountId)){
-            await this._accountService.haftUpdate(accountId,{password:hashedPassword})
+            const account = await this._accountService.findById(accountId);
+            await this._accountService.haftUpdate(accountId,{password:hashedPassword});
+            await this.kafkaService.emitResetPasswordSuccess(account.email, account.profile.firstName );
             return true;
         }else{
             throw new ForbiddenException(' token is used! ');

@@ -8,7 +8,7 @@ import { PointDTO } from "./dto/point.dto";
 import { UpdatePointDTO } from "./dto/request/update-point.dto";
 import { PageOptionsDto } from "src/common/pagination/page-option.dto";
 import { PageMetaDto } from "src/common/pagination/page-meta.dto";
-
+import { PageDto } from "src/common/pagination/page.dto";
 
 @Injectable()
 export class PointService {
@@ -22,28 +22,42 @@ export class PointService {
         return plainToInstance(CreatePointDTO, savedPoint);
     }
 
-    async findAll(pageOptionsDto: PageOptionsDto): Promise<{ data: PointDTO[]; meta: PageMetaDto }> { 
-        const [points, itemCount] = await this.pointRepository.findAndCount({
+    async findAll(pageOptionsDto: PageOptionsDto): Promise<PageDto<PointDTO>> {
+        const allPoints = await this.pointRepository.find({
             where: {
                 name: ILike(`%${pageOptionsDto.searchKey}%`),
             },
-            take: pageOptionsDto.take,
-            skip: pageOptionsDto.skip,
             order: {
                 [pageOptionsDto.orderBy || 'name']: pageOptionsDto.order,
             },
         });
+
+        const itemCount = allPoints.length;
+
+        const start = pageOptionsDto.skip;
+        const end = start + pageOptionsDto.take;
+        const paginatedPoints = allPoints.slice(start, end);
 
         const pageMetaDto = new PageMetaDto({
             pageOptionsDto,
             itemCount,
         });
 
-        return {
-            data: plainToInstance(PointDTO, points),
-            meta: pageMetaDto,
-        };
+        return new PageDto(
+            plainToInstance(PointDTO, paginatedPoints),
+            pageMetaDto
+        );
     }
+
+    async findAllWithoutPagination(): Promise<PointDTO[]> {
+        const points = await this.pointRepository.find({
+            order: {
+                name: 'ASC'
+            }
+        });
+        return plainToInstance(PointDTO, points);
+    }
+    
 
     async findOne(id: string): Promise<PointDTO> {
         const point = await this.pointRepository.findOne({ where: { id } });
@@ -70,5 +84,4 @@ export class PointService {
         }
         await this.pointRepository.remove(point);
     }
-
 }

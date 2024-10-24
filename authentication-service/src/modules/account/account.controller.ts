@@ -47,10 +47,10 @@ export class AuthenticationController {
   }
 
   @Get()
-  // @UseGuards(PermissionsGuard)
-  // @Permissions([
-  //   {module: Modules.ACCOUNT, action: Actions.GET_ALL},
-  // ])
+  @UseGuards(PermissionsGuard)
+  @Permissions([
+    {module: Modules.ACCOUNT, action: Actions.READ},
+  ])
   getAllAccount( @Query() pageOptionsDto: PageOptionsDto,):Promise<PageDto<AccountDTO>>{
     return this.accountService.getAllAccounts(pageOptionsDto);
   }

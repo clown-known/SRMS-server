@@ -22,8 +22,14 @@ export class RolePermissionSubscriber implements EntitySubscriberInterface<RoleP
         return RolePermissions;
     }
     async beforeRemove(event: RemoveEvent<RolePermissions>): Promise<void> {
-        console.log('Permission removed:'+ event.entity);
+        console.log('Permission removed:'+ event.entityId);
+        console.log('Permission databaseEntity:'+ event.databaseEntity);
+        console.log('Permission queryRunner:'+ event.queryRunner.data);
+        console.log('Permission connection:'+ event.connection);
+        console.log('Permission metadata:'+ event.metadata);
     }
+    
     async beforeInsertInsert(event: InsertEvent<RolePermissions>) {
+        console.log('Permission insert:'+ event.entity)
     }
 }

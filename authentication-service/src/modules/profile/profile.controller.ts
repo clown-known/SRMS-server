@@ -20,7 +20,7 @@ export class ProfileController {
     @Get('all')
     @UseGuards(PermissionsGuard)
     @Permissions([
-    {module: Modules.ACCOUNT, action: Actions.GET_ALL}
+    {module: Modules.ACCOUNT, action: Actions.READ}
     ])
     getAllProfile(@Req() req){
         console.log(req.user)

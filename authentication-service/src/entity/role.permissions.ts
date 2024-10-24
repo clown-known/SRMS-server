@@ -1,4 +1,4 @@
-import { Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { BeforeRemove, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Roles } from "./role";
 import { Permission } from "./permission";
 
@@ -14,5 +14,8 @@ export class RolePermissions {
     @ManyToOne(() => Permission, permission => permission.rolePermissions)
     @JoinColumn({ name: "permission_id" })
     permission: Permission;
-
+    @BeforeRemove()
+    updateStatus() {
+        console.log("id removed: "+this.id)
+    }
 }

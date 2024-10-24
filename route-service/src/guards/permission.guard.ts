@@ -1,5 +1,5 @@
 import { InjectRedis } from "@nestjs-modules/ioredis";
-import { CanActivate, ExecutionContext, ForbiddenException, Inject, Injectable } from "@nestjs/common";
+import { CanActivate, ExecutionContext, ForbiddenException, Inject, Injectable, UnauthorizedException } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { JwtService } from "@nestjs/jwt";
 import { Redis } from "ioredis";
@@ -26,14 +26,14 @@ export class PermissionsGuard implements CanActivate {
     const token = request.headers.authorization?.split(' ')[1];
     
     if (!token) {
-        throw new ForbiddenException('No token provided');
+        throw new UnauthorizedException('No token provided');
     }
     // verify token is expired or invalid
     const decodedToken = (() => {
         try {
             return this.jwtService.verify(token); 
         } catch (error) {
-            throw new ForbiddenException('token is invalid!');
+            throw new UnauthorizedException('token is invalid!');
         }
     })()
     if(decodedToken.sub == process.env.ADMIN_ID) return true; 
@@ -43,29 +43,38 @@ export class PermissionsGuard implements CanActivate {
         const permissions = await this.authService.getPermissionsOfUser(decodedToken.sub); 
         if (permissions) {
             await this.redis.set('permission:'+decodedToken.sub, JSON.stringify(permissions));
-            await this.redis.expire('permission:'+decodedToken.sub, 86400);
+            await this.redis.expire('permission:'+decodedToken.sub, 400);
         }
         return permissions || [];
     }
     const getUserPermissions = async () => {
         const cachedPermissions = await this.redis.get('permission:'+decodedToken.sub);
-        if (cachedPermissions) return JSON.parse(cachedPermissions).data;
+        // console.log(JSON.parse(cachedPermissions))
+        if (cachedPermissions) return await JSON.parse(cachedPermissions);
         return getUserPermissionFromDBAndPutToCache();
     };
-    const userPermissions = await getUserPermissions();
     // map permission to partern
     // check permission is in required list or not
-    console.log(userPermissions);
-    const hasPermission = (permission) => {
-        if(userPermissions==null) return false;
+    const hasPermission = (userPermissions) => {
+        console.log('user per: ' + userPermissions);
+        console.log(`req per: ${requiredPermissions.map(p => `${p.module}:${p.action}`).join(', ')}`);
+        if (!userPermissions) return false;
+
         const permissionKeys = userPermissions.map(
-            (permission) => `${permission.module}:${permission.action}`,
+            (permissionk) => `${permissionk.module}:${permissionk.action}`,
         );
-        return requiredPermissions.some((permission) =>
-            permissionKeys.includes(`${permission.module}:${permission.action}`)); 
-    }
-    if(hasPermission(userPermissions)) return true;
-    if (!hasPermission(await getUserPermissionFromDBAndPutToCache())) {
+
+        console.log('permissionKeys:', permissionKeys); // Debug log
+
+        const hasAccess = requiredPermissions.some((requiredPermission) =>
+            permissionKeys.includes(`${requiredPermission.module}:${requiredPermission.action}`)
+        );
+
+        console.log('hasAccess:', hasAccess); // Debug log
+        return hasAccess;
+    };
+    if(hasPermission((await getUserPermissions()))) return true;
+    if (!hasPermission((await getUserPermissionFromDBAndPutToCache()))) {
         throw new ForbiddenException('Insufficient permissions');
     }
     return true;

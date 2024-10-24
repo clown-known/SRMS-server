@@ -1,5 +1,5 @@
 import { InjectRedis } from "@nestjs-modules/ioredis";
-import { CanActivate, ExecutionContext, ForbiddenException, Inject, Injectable } from "@nestjs/common";
+import { CanActivate, ExecutionContext, ForbiddenException, Inject, Injectable, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { Reflector } from "@nestjs/core";
 import { JwtService } from "@nestjs/jwt";
@@ -29,51 +29,45 @@ export class PermissionsGuard implements CanActivate {
     const token = request.headers.authorization?.split(' ')[1];
     
     if (!token) {
-        throw new ForbiddenException('No token provided');
+        throw new UnauthorizedException('No token provided');
     }
     // verify token is expired or invalid
     const decodedToken = (() => {
         try {
             return this.jwtService.verify(token);
         } catch (error) {
-            throw new ForbiddenException('token is invalid!');
+            throw new UnauthorizedException('token is invalid!');
         }
     })()
     if(decodedToken.sub == process.env.ADMIN_ID) return true;
-    // const decodedToken =this.jwtService.verify(token);
-    // console.log(decodedToken.sub)
-    // const user = await this.accountRepository.findOne(decodedToken.sub);
-    // console.log(user)
-    // if (!user ) {
-    //     throw new ForbiddenException('Invalid user or role');
-    // }
-    // get permission from cache if not exist check in database, and set it to cache for another request
+
     const getUserPermissionFromDBAndPutToCache = async () =>{
         const permissions = await this.authService.getPermissionsOfUser(decodedToken.sub);
+        // console.log(permissions)
         if (permissions) {
             await this.redis.set('permission:'+decodedToken.sub, JSON.stringify(permissions));
-            await this.redis.expire('permission:'+decodedToken.sub, 86400);
+            await this.redis.expire('permission:'+decodedToken.sub, 400);
         }
         return permissions || [];
     }
     const getUserPermissions = async () => {
         const cachedPermissions = await this.redis.get('permission:'+decodedToken.sub);
+        // console.log(JSON.parse(cachedPermissions))
         if (cachedPermissions) return JSON.parse(cachedPermissions);
         return getUserPermissionFromDBAndPutToCache();
     };
-    const userPermissions = await getUserPermissions();
-    // map permission to partern
-    // check permission is in required list or not
-    const hasPermission = (permission) => {
+
+    const hasPermission = (userPermissions) => {
+        // console.log('user per: '+userPermissions)
         if(userPermissions==null) return false;
-        const permissionKeys = userPermissions.map(
+        const permissionKeys = userPermissions?.map(
             (permission) => `${permission.module}:${permission.action}`,
         );
-        return requiredPermissions.some((permission) =>
-            permissionKeys.includes(`${permission.module}:${permission.action}`)); 
+        return requiredPermissions?.some((permission) =>
+            permissionKeys?.includes(`${permission.module}:${permission.action}`)); 
     }
-    if(hasPermission(userPermissions)) return true;
-    if (!hasPermission(await getUserPermissionFromDBAndPutToCache())) {
+    if(hasPermission((await getUserPermissions()))) return true;
+    if (!hasPermission((await getUserPermissionFromDBAndPutToCache()))) {
         throw new ForbiddenException('Insufficient permissions');
     }
     return true;

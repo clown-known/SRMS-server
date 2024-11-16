@@ -2,46 +2,36 @@
 
 services:
   postgres:
-    container_name: postgres_authentication
-    image: postgres:${POSTGRES_VERSION}
+    container_name: postgres_authen
+    image: postgres:16
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-12345}
-      POSTGRES_DB: ${POSTGRES_DATABASE}
-      # POSTGRES_USER: postgres
-      # POSTGRES_PASSWORD: postgres
-      # POSTGRES_DB: postgres
-      PGDATA: /data/postgres-server
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: 12345
+      POSTGRES_DB: jwat_db
+      PGDATA: /data/postgres_authen
     volumes:
-      - postgres:/data/postgres-server
+      - postgres:/data/postgres_authen
     ports:
-      - ${POSTGRES_PORT}:5432
+      - 5434:5432
     networks:
       - microservice-network
     restart: unless-stopped
 
   postgres-2:
-    container_name: postgres_container_2
-    image: postgres:${POSTGRES_VERSION}
+    container_name: postgres_route
+    image: postgres:16
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-sa}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-123}
-      POSTGRES_DB: ${POSTGRES_ROUTE_DATABASE}
-      PGDATA: /data/postgres
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: 12345
+      POSTGRES_DB: route_service_db
+      PGDATA: /data/postgres_route
     volumes:
-      - postgres:/data/postgres_2
+      - postgres:/data/postgres_route
     ports:
-      - ${POSTGRES_ROUTE_PORT}:5432
+      - 5433:5432
     networks:
       - microservice-network
     restart: unless-stopped
-
-  # grpc-server:
-  #   build:
-  #     context: ./authentication-service/src/grpc-server
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "7000:7000"
 
   redis-master:
     image: redis:6.0.7
@@ -69,6 +59,7 @@ services:
 
   authentication-service:
     build: ./authentication-service
+    image: namnvd/authentication-service:latest
     container_name: authentication_service
     ports:
       - "3001:3001"
@@ -86,6 +77,7 @@ services:
     build:
       context: ./route-service
       dockerfile: Dockerfile
+    image: namnvd/route-service:latest
     container_name: route_service
     ports:
       - "3002:3002"
@@ -99,6 +91,7 @@ services:
 
   notification-service:
     build: ./notification-service
+    image: namnvd/notification-service:latest
     container_name: notification_service
     env_file:
       - ./notification-service/.env
